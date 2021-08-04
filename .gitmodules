@@ -1,15 +1,18 @@
-[submodule "projects/gateway-portal-backend"]
-	path = projects/gateway-portal-backend
-	url = https://github.com/hango-io/gateway-portal-backend.git
-[submodule "projects/gateway-ui"]
-	path = projects/gateway-ui
-	url = https://github.com/hango-io/gateway-ui.git
 [submodule "projects/envoy-proxy"]
 	path = projects/envoy-proxy
 	url = https://github.com/hango-io/envoy-proxy.git
-[submodule "projects/gateway-api-plane"]
-	path = projects/gateway-api-plane
-	url = https://github.com/hango-io/api-plane.git
 [submodule "projects/slime"]
 	path = projects/slime
 	url = https://github.com/slime-io/slime.git
+[submodule "projects/istio"]
+	path = projects/istio
+	url = https://github.com/istio/istio
+[submodule "projects/api-plane"]
+	path = projects/api-plane
+	url = https://github.com/hango-io/api-plane.git
+[submodule "projects/hango-portal"]
+	path = projects/hango-portal
+	url = https://github.com/hango-io/portal.git
+[submodule "projects/hango-ui"]
+	path = projects/hango-ui
+	url = https://github.com/hango-io/ui.git
