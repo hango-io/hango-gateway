@@ -1,0 +1,33 @@
+---
+apiVersion: microservice.slime.io/v1alpha1
+kind: PluginManager
+metadata:
+  name: gw-cluster-{{ .Values.labels.gw_cluster }}
+  namespace: {{ .Values.namespace }}
+spec:
+  plugin:
+  - enable: true
+    name: envoy.fault
+  - enable: true
+    inline:
+      settings:
+        ip_source_header: x-hango-real-ip
+    name: proxy.filters.http.iprestriction
+  - enable: true
+    name: proxy.filters.http.locallimit
+  - enable: true
+    name: proxy.filters.http.staticdowngrade
+  - enable: true
+    name: proxy.filters.http.rider
+    inline:
+      settings:
+        plugin:
+          vm_config:
+            package_path: "/usr/local/lib/rider/?/init.lua;/usr/local/lib/rider/?.lua;"
+          code:
+            local:
+              filename: /usr/local/lib/rider/plugins/ua-restriction.lua
+          name: ua-restriction
+          config: {}
+  workloadLabels:
+    gw_cluster: {{ .Values.labels.gw_cluster }}

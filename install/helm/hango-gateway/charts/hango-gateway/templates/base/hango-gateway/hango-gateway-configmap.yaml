@@ -1,0 +1,742 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hango-api-plane-config
+  namespace: {{ .Values.namespace }}
+data:
+  k8s.yaml: |-
+    k8s:
+      clusters:
+        # 单集群可不配相关信息
+        default:
+          k8s-api-server: ""
+          cert-data: ""
+          key-data: ""
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hango-portal-config
+  namespace: {{ .Values.namespace }}
+data:
+  gdashboard-jdbc.properties: |
+    # use h2 database
+    spring.datasource.platform=h2
+    spring.datasource.url=jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false;MODE=MYSQL;TRACE_LEVEL_FIle=4;TRACE_LEVEL_SYSTEM_OUT=3
+    spring.datasource.driverClassName=org.h2.Driver
+    spring.datasource.username=sa
+    spring.datasource.password=root
+    spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+    spring.jpa.hibernate.ddl-auto=create-drop
+    spring.datasource.initialization-mode=always
+
+    spring.datasource.schema=classpath:schema.sql
+    spring.datasource.data=classpath:data.sql
+    spring.h2.console.enabled=true
+    spring.h2.console.path=/h2
+    spring.h2.console.settings.web-allow-others=true
+
+  data.sql: |
+    MERGE INTO apigw_gportal_api_document_status (
+    id,
+    status
+    )
+    VALUES (
+    1,
+    '开发中'
+    ), (
+    2,
+    '联调中'
+    ), (
+    3,
+    '提测中'
+    ), (
+    4,
+    '已上线'
+    );
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hango-rider-plugin
+  namespace: {{ .Values.namespace }}
+data:
+  ua-restriction.lua: |
+    require("rider")
+    local envoy = envoy
+    local get_req_header = envoy.req.get_header
+    local ipairs = ipairs
+    local re_find = string.find
+    local respond = envoy.respond
+    local logDebug = envoy.logDebug
+
+    local uaRestrictionHandler = {}
+
+    local BAD_REQUEST = 400
+    local FORBIDDEN = 403
+
+    local MATCH_EMPTY     = 0
+    local MATCH_WHITELIST = 1
+    local MATCH_BLACKLIST = 2
+
+    local json_validator = require("rider.json_validator")
+
+    local base_json_schema = {
+        type = 'object',
+        properties = {},
+    }
+
+    local route_json_schema = {
+        type = 'object',
+        properties = {
+          allowlist = {
+            type = 'array',
+            items = {
+              type = 'string',
+            },
+          },
+          denylist = {
+            type = 'array',
+            items = {
+              type = 'string',
+            },
+          },
+        },
+    }
+    json_validator.register_validator(base_json_schema, route_json_schema)
+
+    --- strips whitespace from a string.
+    local function strip(str)
+      if str == nil then
+        return ""
+      end
+      str = tostring(str)
+      if #str > 200 then
+        return str:gsub("^%s+", ""):reverse():gsub("^%s+", ""):reverse()
+      else
+        return str:match("^%s*(.-)%s*$")
+      end
+    end
+
+    local function get_user_agent()
+      return get_req_header("user-agent")
+    end
+
+    local function examine_agent(user_agent, allowlist, denylist)
+      user_agent = strip(user_agent)
+
+      if allowlist then
+        for _, rule in ipairs(allowlist) do
+          logDebug("allowist: compare "..rule.." and "..user_agent)
+          if re_find(user_agent, rule) then
+            return MATCH_WHITELIST
+          end
+        end
+      end
+
+      if denylist then
+        for _, rule in ipairs(denylist) do
+          logDebug("denylist: compare "..rule.." and "..user_agent)
+          if re_find(user_agent, rule) then
+            return MATCH_BLACKLIST
+          end
+        end
+      end
+
+      return MATCH_EMPTY
+    end
+
+    function uaRestrictionHandler:on_request()
+      local config = envoy.get_route_config()
+      if config == nil then
+        return
+      end
+
+      logDebug("Checking user-agent");
+
+      local user_agent = get_user_agent()
+      if user_agent == nil then
+        return respond({[":status"] = BAD_REQUEST}, "user-agent not found")
+      end
+
+      local match  = examine_agent(user_agent, config.allowlist, config.denylist)
+
+      if match > 1 then
+        logDebug("UA is now allowed: "..user_agent);
+        return respond({[":status"] = FORBIDDEN}, "Forbidden")
+      end
+    end
+
+    return uaRestrictionHandler
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hango-plugin
+  namespace: {{ .Values.namespace }}
+data:
+  ip-restriction.json: |-
+    {
+      "inject": {
+        "kind": "ip-restriction"
+      },
+      "layouts": [
+        {
+          "key": "type",
+          "alias": "黑白名单类型",
+          "type": "select",
+          "options": [
+            {
+              "text": "黑名单",
+              "value": "0"
+            },
+            {
+              "text": "白名单",
+              "value": "1"
+            }
+          ],
+          "rules": [
+            "Required",
+            "Number"
+          ]
+        },
+        {
+          "key": "list",
+          "alias": "ip列表",
+          "default": [],
+          "rules": [
+            "Required",
+            {"regex": "^((?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(?:(\\/([1-9]|[1-2]\\d|3[0-1])))?)$|^(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"}
+          ],
+          "type": "multi_input"
+        }
+      ]
+    }
+  local-limit.json: |-
+    {
+      "inject": {
+        "kind": "local-limiting",
+        "name": "local-limiting"
+      },
+      "layouts": [
+        {
+          "key": "IsSafe",
+          "alias": "是否线程独立",
+          "type": "switch",
+          "help": "默认使用锁机制保证安全；如果打开该字段，代表线程独立。限流规则上限为rate*proxy worker"
+        },
+        {
+          "key": "limit_by_list",
+          "alias": "限流标识列表",
+          "type": "array",
+          "layouts": [
+            {
+              "key": "headers",
+              "alias": "限流headers",
+              "type": "array",
+              "layouts": [
+                {
+                  "key": "headerKey",
+                  "alias": "限流header",
+                  "type": "input"
+                },
+                {
+                  "key": "match_type",
+                  "alias": "匹配方式",
+                  "type": "select",
+                  "default": "exact_match",
+                  "options": [
+                    {
+                      "text": "精确匹配",
+                      "value": "exact_match"
+                    },
+                    {
+                      "text": "正则表达式",
+                      "value": "safe_regex_match"
+                    }
+                  ]
+                },
+                {
+                  "key": "value",
+                  "type": "input",
+                  "alias": "取值",
+                  "invisible": {
+                    "present_match": ["this", "match_type"],
+                    "present_match_invert": ["this", "match_type"]
+                  }
+                }
+              ]
+            },
+            {
+              "key": "day",
+              "alias": "每天请求数",
+              "type": "number",
+              "rules": [
+                "Number",
+                "MinNumber(0)"
+              ]
+            },
+            {
+              "key": "hour",
+              "alias": "每小时请求数",
+              "type": "number",
+              "rules": [
+                "Number",
+                "MinNumber(0)"
+              ]
+            },
+            {
+              "key": "minute",
+              "alias": "每分钟请求数",
+              "type": "number",
+              "rules": [
+                "Number",
+                "MinNumber(0)"
+              ]
+            },
+            {
+              "key": "second",
+              "alias": "每秒请求数",
+              "type": "number",
+              "rules": [
+                "Number",
+                "MinNumber(0)"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ua-restriction.json: |-
+    {
+      "formatter": {
+        "kind": "ua-restriction",
+        "type": "lua",
+        "need_to_response": "&need_to_response",
+        "config": {
+          "allowlist": "&allowlist",
+          "denylist": "&denylist"
+        }
+      },
+      "layouts": [
+        {
+          "key": "allowlist",
+          "alias": "白名单",
+          "help": "User-Agent优先匹配白名单，命中之后直接放行，支持正则",
+          "type": "multi_input",
+          "rules": [
+          ]
+        },
+        {
+          "key": "denylist",
+          "alias": "黑名单",
+          "help": "User-Agent优先匹配白名单，没有命中，继续匹配黑名单，命中之后直接禁止，支持正则",
+          "type": "multi_input",
+          "rules": [
+          ]
+        }
+      ]
+    }
+  percent-limit.json: |-
+    {
+      "inject": {
+        "kind": "percent-limit"
+      },
+      "layouts": [
+        {
+          "key": "limit_percent",
+          "alias": "限流百分比",
+          "help": "0~100之间的整数",
+          "type": "input",
+          "rules": [
+            "Required",
+            "Number",
+            "MaxNumber(100)",
+            "MinNumber(0)"
+          ]
+        }
+      ]
+    }
+  plugin-config.json: |-
+    {
+      "item": [
+        {
+          "name": "percent-limit",
+          "displayName": "百分比限流",
+          "schema": "plugin/route/percent-limit.json",
+          "description": "百分比限流插件",
+          "processor": "AggregateGatewayPluginProcessor",
+          "author": "system",
+          "createTime": "1572537600000",
+          "updateTime": "1572537600000",
+          "pluginScope": "routeRule",
+          "pluginPriority": "500",
+          "instructionForUse": "按百分比限流，例如允许50%通过",
+          "categoryKey": "trafficPolicy",
+          "categoryName": "流量管理"
+        },
+        {
+          "name": "ip-restriction",
+          "displayName": "IP黑白名单",
+          "schema": "plugin/route/ip-restriction.json",
+          "description": "黑白名单插件",
+          "processor": "AggregateGatewayPluginProcessor",
+          "author": "system",
+          "createTime": "1572537600000",
+          "updateTime": "1572537600000",
+          "pluginScope": "routeRule,global",
+          "pluginPriority": "1000",
+          "instructionForUse": "根据ip过滤请求",
+          "categoryKey": "security",
+          "categoryName": "安全"
+        },
+        {
+          "name": "static-downgrade",
+          "displayName": "静态降级",
+          "schema": "plugin/route/static-downgrade.json",
+          "description": "",
+          "processor": "AggregateGatewayPluginProcessor",
+          "author": "system",
+          "createTime": "1572537600000",
+          "updateTime": "1572537600000",
+          "pluginScope": "routeRule,global",
+          "pluginPriority": "2200",
+          "instructionForUse": "当后端响应结果符合条件时，对返回结果进行静态响应降级",
+          "categoryKey": "trafficPolicy",
+          "categoryName": "流量管理"
+        },
+        {
+          "name": "local-limiting",
+          "displayName": "本地限流",
+          "schema": "plugin/route/local-limit.json",
+          "description": "",
+          "processor": "AggregateGatewayPluginProcessor",
+          "author": "system",
+          "createTime": "1572537600000",
+          "updateTime": "1572537600000",
+          "pluginScope": "routeRule,global",
+          "pluginPriority": "3400",
+          "instructionForUse": "请求频率限流，按后端服务节点限流",
+          "categoryKey": "trafficPolicy",
+          "categoryName": "流量管理"
+        },
+        {
+          "name": "ua-restriction",
+          "displayName": "UA黑白名单",
+          "schema": "plugin/route/ua-restriction.json",
+          "description": "UA黑白名单插件",
+          "processor": "AggregateGatewayPluginProcessor",
+          "author": "system",
+          "createTime": "1572537600000",
+          "updateTime": "1572537600000",
+          "pluginScope": "global,routeRule",
+          "instructionForUse": "UA黑白名单插件",
+          "categoryKey": "security",
+          "categoryName": "安全"
+        }
+      ]
+    }
+  static-downgrade.json: |-
+    {
+      "formatter": {
+        "kind": "static-downgrade",
+        "condition?": "&condition",
+        "response": {
+          "code": "&response.code",
+          "headers": "@response.headers",
+          "body": "&response.body"
+        }
+      },
+      "layouts": [
+        {
+          "key": "condition",
+          "alias": "静态降级条件",
+          "type": "layouts",
+          "layouts": [
+            {
+              "key": "request",
+              "alias": "请求",
+              "type": "layouts",
+              "layouts": [
+                {
+                  "key": "requestSwitch",
+                  "alias": "是否使用请求进行匹配",
+                  "type": "switch",
+                  "default": false
+                },
+                {
+                  "key": "method",
+                  "alias": "请求方法",
+                  "type": "multi_select",
+                  "visible": {
+                    "this.requestSwitch": true
+                  },
+                  "options": [
+                    {
+                      "text": "GET",
+                      "value": "GET"
+                    },
+                    {
+                      "text": "POST",
+                      "value": "POST"
+                    },
+                    {
+                      "text": "PUT",
+                      "value": "PUT"
+                    },
+                    {
+                      "text": "DELETE",
+                      "value": "DELETE"
+                    },
+                    {
+                      "text": "OPTIONS",
+                      "value": "OPTIONS"
+                    },
+                    {
+                      "text": "HEAD",
+                      "value": "HEAD"
+                    },
+                    {
+                      "text": "TRACE",
+                      "value": "TRACE"
+                    },
+                    {
+                      "text": "CONNECT",
+                      "value": "CONNECT"
+                    },
+                    {
+                      "text": "PATCH",
+                      "value": "PATCH"
+                    }
+                  ]
+                },
+                {
+                  "key": "path",
+                  "alias": "请求路径",
+                  "type": "layouts",
+                  "visible": {
+                    "this.requestSwitch": true
+                  },
+                  "layouts": [
+                    {
+                      "key": "match_type",
+                      "alias": "匹配方式",
+                      "type": "select",
+                      "default": "exact_match",
+                      "options": [
+                        {
+                          "text": "精确匹配",
+                          "value": "exact_match"
+                        },
+                        {
+                          "text": "正则表达式",
+                          "value": "safe_regex_match"
+                        }
+                      ]
+                    },
+                    {
+                      "key": "value",
+                      "type": "input",
+                      "alias": "取值"
+                    }
+                  ]
+                },
+                {
+                  "key": "host",
+                  "alias": "域名",
+                  "type": "layouts",
+                  "visible": {
+                    "this.requestSwitch": true
+                  },
+                  "layouts": [
+                    {
+                      "key": "match_type",
+                      "alias": "匹配方式",
+                      "type": "select",
+                      "default": "exact_match",
+                      "options": [
+                        {
+                          "text": "精确匹配",
+                          "value": "exact_match"
+                        },
+                        {
+                          "text": "正则表达式",
+                          "value": "safe_regex_match"
+                        }
+                      ]
+                    },
+                    {
+                      "key": "value",
+                      "type": "input",
+                      "alias": "取值"
+                    }
+                  ]
+                },
+                {
+                  "key": "headers",
+                  "alias": "请求头",
+                  "type": "array",
+                  "visible": {
+                    "this.requestSwitch": true
+                  },
+                  "layouts": [
+                    {
+                      "key": "headerKey",
+                      "alias": "请求头",
+                      "type": "input"
+                    },
+                    {
+                      "key": "match_type",
+                      "alias": "匹配方式",
+                      "type": "select",
+                      "default": "exact_match",
+                      "options": [
+                        {
+                          "text": "精确匹配",
+                          "value": "exact_match"
+                        },
+                        {
+                          "text": "正则表达式",
+                          "value": "safe_regex_match"
+                        }
+                      ]
+                    },
+                    {
+                      "key": "value",
+                      "type": "input",
+                      "alias": "取值"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "key": "response",
+              "alias": "响应",
+              "type": "layouts",
+              "layouts": [
+                {
+                  "key": "code",
+                  "alias": "状态码",
+                  "type": "layouts",
+                  "layouts": [
+                    {
+                      "key": "match_type",
+                      "alias": "匹配方式",
+                      "type": "select",
+                      "default": "exact_match",
+                      "options": [
+                        {
+                          "text": "精确匹配",
+                          "value": "exact_match"
+                        },
+                        {
+                          "text": "正则表达式",
+                          "value": "safe_regex_match"
+                        }
+                      ]
+                    },
+                    {
+                      "key": "value",
+                      "alias": "取值",
+                      "type": "input",
+                      "rules": [
+                        "Required",
+                        "Number",
+                        "MinNumber(200)",
+                        "MaxNumber(599)"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "key": "headers",
+                  "alias": "响应头",
+                  "type": "array",
+                  "layouts": [
+                    {
+                      "key": "headerKey",
+                      "alias": "请求头",
+                      "type": "input"
+                    },
+                    {
+                      "key": "match_type",
+                      "alias": "匹配方式",
+                      "type": "select",
+                      "default": "exact_match",
+                      "options": [
+                        {
+                          "text": "精确匹配",
+                          "value": "exact_match"
+                        },
+                        {
+                          "text": "正则表达式",
+                          "value": "safe_regex_match"
+                        }
+                      ]
+                    },
+                    {
+                      "key": "value",
+                      "type": "input",
+                      "alias": "取值"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "response",
+          "alias": "降级后响应内容",
+          "type": "layouts",
+          "layouts": [
+            {
+              "key": "code",
+              "type": "input",
+              "help": "默认200",
+              "default": "200",
+              "alias": "响应状态码",
+              "rules": [
+                "Required",
+                "Number",
+                "MinNumber(200)",
+                "MaxNumber(599)"
+              ]
+            },
+            {
+              "key": "headers",
+              "type": "array",
+              "alias": "响应头",
+              "layouts": [
+                {
+                  "key": "key",
+                  "type": "input",
+                  "alias": "响应头",
+                  "rules": [
+                    "Required"
+                  ]
+                },
+                {
+                  "key": "value",
+                  "type": "input",
+                  "alias": "响应头值",
+                  "rules": [
+                    "Required"
+                  ]
+                }
+              ]
+            },
+            {
+              "key": "body",
+              "type": "input",
+              "alias": "请求响应内容"
+            }
+          ]
+        }
+      ]
+    }

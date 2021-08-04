@@ -1,0 +1,5 @@
+images:
+  e2e_image: docker.io/hangoio/istio_e2e_app:e2e
+
+
+demo_namespace: hango-system

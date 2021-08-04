@@ -1,0 +1,158 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: hango-api-plane
+  name: hango-api-plane
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.replicas }}
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: hango-api-plane
+  template:
+    metadata:
+      labels:
+        app: hango-api-plane
+    spec:
+      serviceAccount: hango-apiplane
+      containers:
+      - env:
+        - name: NCE_PORT
+          value: "10880"
+        - name: NCE_JAVA_OPTS
+          value: "-DistioNamespace={{ .Values.namespace }} -DistioName=istiod -DstartInformer=false -DresourceNamespace={{ .Values.namespace }} "
+        image: "{{.Values.images.hango_apiplane_image}}"
+        name: tomcat
+        volumeMounts:
+        - mountPath: /usr/local/tomcat/logs
+          name: log
+        - mountPath: /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/k8s.yaml
+          name: k8s-conf
+          subPath: k8s.yaml
+        - mountPath: /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/template/plugin/route
+          name: hango-plugin
+      volumes:
+      - hostPath:
+          path: {{ .Values.data_dir }}/log/hango-api-plane
+        name: log
+      - configMap:
+          defaultMode: 420
+          items:
+          - key: k8s.yaml
+            path: k8s.yaml
+          name: hango-api-plane-config
+        name: k8s-conf
+      - configMap:
+          defaultMode: 420
+          name: hango-plugin
+        name: hango-plugin
+      restartPolicy: Always
+      dnsPolicy: ClusterFirstWithHostNet
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    nce-app: hango-portal
+  name: hango-portal
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: hango-portal
+  template:
+    metadata:
+      labels:
+        app: hango-portal
+    spec:
+      containers:
+      - name: tomcat
+        env:
+        - name: NCE_PORT
+          value: "11113"
+        image: "{{ .Values.images.hango_portal_image }}"
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - mountPath: /usr/local/tomcat/logs
+          name: log
+        - mountPath: /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/gdashboard-jdbc.properties
+          subPath: gdashboard-jdbc.properties
+          name: hango-portal-config
+        - mountPath: /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/data.sql
+          subPath: data.sql
+          name: hango-portal-config
+      volumes:
+      - hostPath:
+          path: {{ .Values.data_dir }}/log/hango-portal
+        name: log
+      - configMap:
+          name: hango-portal-config
+          items:
+          - key: gdashboard-jdbc.properties
+            path: gdashboard-jdbc.properties
+          - key: data.sql
+            path: data.sql
+        name: hango-portal-config
+      restartPolicy: Always
+      dnsPolicy: ClusterFirstWithHostNet
+    
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hango-ui
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hango-ui
+  template:
+    metadata:
+      labels:
+        app: hango-ui
+    spec:
+      containers:
+      - env:
+        - name: MICRO_APP_LOGGER_LEVEL
+          value: info
+        - name: gportalUrl
+          value: http://hango-portal.{{ .Values.namespace }}.svc.cluster.local
+        image: "{{ .Values.images.hango_ui_image }}"
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /inner/api/health/status
+            port: 8789
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 15
+        name: hango-ui
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /inner/api/health/status
+            port: 8789
+            scheme: HTTP
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirstWithHostNet
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30

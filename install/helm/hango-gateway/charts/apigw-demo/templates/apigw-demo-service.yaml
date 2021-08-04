@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: istio-e2e-app
+  name: istio-e2e-app
+  namespace: {{ .Values.demo_namespace }}
+spec:
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  - name: http-two
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  - name: tcp
+    port: 90
+    protocol: TCP
+    targetPort: 90
+  - name: tcp-two
+    port: 9090
+    protocol: TCP
+    targetPort: 9090
+  - name: http2-example
+    port: 70
+    protocol: TCP
+    targetPort: 70
+  - name: grpc
+    port: 7070
+    protocol: TCP
+    targetPort: 7070
+  selector:
+    app: istio-e2e-app
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}

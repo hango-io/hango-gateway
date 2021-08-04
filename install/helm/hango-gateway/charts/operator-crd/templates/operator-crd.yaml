@@ -1,0 +1,80 @@
+---
+apiVersion: config.netease.com/v1alpha1
+kind: SlimeBoot
+metadata:
+  name: hango-plugin
+  namespace: {{ .Values.proxy_namespace }}
+spec:
+  namespace: {{ .Values.proxy_namespace }}
+  image: 
+    pullPolicy: Always
+    repository: docker.io/bcxq/slime
+    tag: v0.1-7c913b2
+  module:
+  - name: plugin
+    plugin:
+      enable: true
+
+---
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: hango-istio
+  namespace: {{ .Values.proxy_namespace }}
+spec:
+  components:
+    pilot:
+      k8s:
+        resources:
+          requests:
+            memory: 2048Mi
+  meshConfig:
+    rootNamespace: {{ .Values.proxy_namespace }}
+  profile: minimal
+  values:
+    global:
+      istioNamespace: {{ .Values.proxy_namespace }}
+
+---
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: hango-gateway
+  namespace: {{ .Values.proxy_namespace }}
+spec:
+  components:
+    ingressGateways:
+    - enabled: true
+      k8s:
+        overlays:
+        - kind: Deployment
+          name: gateway-proxy
+          patches:
+          - path: spec.template.spec.volumes[10]
+            value: |- 
+              name: hango-rider-plugin
+              configMap:
+                name: hango-rider-plugin
+                defaultMode: 420
+          - path: spec.template.spec.containers[0].volumeMounts[100]
+            value: |- 
+              name: hango-rider-plugin 
+              mountPath: /usr/local/lib/rider/plugins
+        podAnnotations:
+          proxy.istio.io/config: '{"discoveryAddress" : "istiod.hango-system.svc.cluster.local:15010","controlPlaneAuthPolicy":"NONE"}'
+        service:
+          selector:
+            app: gateway-proxy
+          type: NodePort
+      label:
+        app: gateway-proxy
+        gw_cluster: demo-istio
+      name: gateway-proxy
+    pilot:
+      enabled: false
+  profile: minimal
+  values:
+    global:
+      istioNamespace: {{ .Values.proxy_namespace }}
+      proxy:
+        image: "{{.Values.images.gateway_proxy}}"

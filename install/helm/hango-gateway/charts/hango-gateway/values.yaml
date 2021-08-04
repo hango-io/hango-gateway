@@ -1,0 +1,13 @@
+data_dir: /data
+cluster_dns_domain: cluster.local
+
+images:
+  hango_apiplane_image: docker.io/hangoio/api-plane:v0.1.1-main-5efd93f0
+  hango_portal_image: docker.io/hangoio/portal:v0.1.1-main-d18f40e0
+  hango_ui_image: docker.io/hangoio/hango-ui:v0.0.1-alpha-ce0b0fd7
+
+namespace: hango-system
+labels:
+  gw_cluster: demo-istio
+
+replicas: 1

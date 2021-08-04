@@ -1,0 +1,49 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hango-api-plane
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: hango-api-plane
+spec:
+  type: ClusterIP
+  ports:
+  - port: 10880
+    targetPort: 10880
+    name: http
+  selector:
+    app: hango-api-plane
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hango-portal
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: hango-portal
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    targetPort: 11113
+  selector:
+    app: hango-portal
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hango-ui
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: hango-ui
+spec:
+  type: NodePort
+  ports:
+  - port: 8789
+    targetPort: 8789
+    protocol: TCP
+  selector:
+    app: hango-ui

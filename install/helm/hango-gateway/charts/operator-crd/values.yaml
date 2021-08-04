@@ -1,0 +1,7 @@
+images:
+  gateway_proxy: hangoio/envoy-gateway-lua:master_baa64381_a01638c-dirty-a01638c
+labels:
+  gw_cluster: demo-istio
+  app: gateway-proxy
+
+proxy_namespace: hango-system
