@@ -6,13 +6,13 @@
 	url = https://github.com/slime-io/slime.git
 [submodule "projects/istio"]
 	path = projects/istio
-	url = https://github.com/istio/istio
+	url = https://github.com/istio/istio.git
 [submodule "projects/api-plane"]
 	path = projects/api-plane
 	url = https://github.com/hango-io/api-plane.git
-[submodule "projects/hango-portal"]
-	path = projects/hango-portal
-	url = https://github.com/hango-io/portal.git
 [submodule "projects/hango-ui"]
 	path = projects/hango-ui
 	url = https://github.com/hango-io/ui.git
+[submodule "projects/hango-portal"]
+	path = projects/hango-portal
+	url = https://github.com/hango-io/portal.git
