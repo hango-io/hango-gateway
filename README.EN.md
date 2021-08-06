@@ -36,17 +36,17 @@ As a hign performance gateway, hango can provide load balancing, rate-limiting, 
 
 **Why Hango?**
 
-* **Technical route**: build on leading edge/middle/service proxy **Envoy**,  with abundant functions, excellent  performance and complete observability.
+* **Technical route**: Build on leading edge/middle/service proxy **Envoy**,  with abundant functions, excellent  performance and complete observability.
 
-* **Extensibility**:  enhanced Lua **Rider** extensible plugin; multi-language extensible plugin base on **WebAssembly** (Alpha, follow-up to provide)
+* **Extensibility**:  Enhanced Lua **Rider** extensible plugin; multi-language extensible plugin base on **WebAssembly** (Alpha, follow-up to provide)
 
-* **Multi-scenario**: used as API Gateway, Kubernetes Ingress, L7 Load balencer, Serveless gateway in the complex scenarios.
+* **Multi-scenario**: Used as API Gateway, Kubernetes Ingress, L7 Load balencer, Serveless gateway in the complex scenarios.
 
-* **Cloud Native**: worked as implements of Kubernetes Ingress or Service Mesh Gateway with natural compatibility.
+* **Cloud Native**: Worked as implements of Kubernetes Ingress or Service Mesh Gateway with natural compatibility.
 
 * **API ecology & integration**:  API ecology governance and hundreds of industrial protocol integration.
 
-* **Control usability**:  easy-to-use control console to manage gateways, services, routes, etc.
+* **Control usability**:  Easy-to-use control console to manage gateways, services, routes, etc.
 
 ## Features
 
