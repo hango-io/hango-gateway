@@ -74,7 +74,7 @@ Hango is built based on the concept of cloud native, the data plane is extended 
 
 Thanks to slime module, you can choose the latest stable istio as the xds-server to data-plane.
 
-![architecture](images/architecture.png)
+![architecture](images/architecture.jpg)
 
 ## Projects
 

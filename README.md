@@ -67,7 +67,7 @@ Hango 基于云原生理念构建，数据面基于 Envoy 进行扩展，增强�
 
 得益于 [Slime](https://github.com/slime-io/slime) 良好的扩展性与兼容性，用户可以直接选择社区 [Istio](https://github.com/istio/istio) 作为控制面进行 Hango 构建。
 
-![architecture](images/architecture.png)
+![architecture](images/architecture.jpg)
 
 ## <span id="pro"> 工程
 
