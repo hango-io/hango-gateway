@@ -14,9 +14,9 @@ Hango 提供请求代理、动态路由、负载均衡、限流、熔断、健�
 
 * **技术路线**：基于领先的网络代理组件 **Envoy** 构建，具备丰富的功能、优异的性能与可观测性
 
-* **扩展性**：可用于生产的**增强级Lua扩展**框架 **Rider**；基于 WebAssembly 的**多语言扩展**插件能力（Alpha，后续提供）
+* **扩展性**：可用于生产的增强级 Lua 扩展框架 Rider；基于 WebAssembly 的多语言扩展插件能力（Alpha，后续提供）
 
-* **多场景**：具备支撑**微服务网关**、**七层负载均衡**、**Kubernetes Ingress**、**Serverless网关**等多种场景能力
+* **多场景**：具备支撑微服务网关、七层负载均衡、Kubernetes Ingress、Serverless网关等多种场景能力
 
 * **云原生**：以云原生标准数据面组件 **Envoy** 作为核心引擎，天然亲和云原生；可作为 Kubernetes、**Service Mesh**、Serverless 的 Ingress、Gateway 实现
 
