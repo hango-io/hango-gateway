@@ -1,4 +1,4 @@
-# 安装Hango
+# 安装
 
 ## 前置条件
 
@@ -7,10 +7,17 @@
 ### Helm 安装
 
 1、安装slime-plugin 和 istio operator
+默认提供系统os支持为linux
 
 ```shell
 cd istio-install
 ./install.sh
+```
+
+如果用户使用其他os，可以通过以下命令，下载平台相关的istioctl即可。
+
+```shell
+curl -L https://istio.io/downloadIstio | sh -
 ```
 
 2、验证slime和istio operator的运行状态，确保STATUS显示为Running状态
@@ -25,20 +32,16 @@ NAME                              READY   STATUS    RESTARTS   AGE
 istio-operator-685566f48c-d8k9r   1/1     Running   0          88s
 ```
 
-3、获取hango网关helm chart安装包
+3、安装hango gateway
+
+提供通过helm方式安装hango gateway, 你需要首先安装[Helm](https://helm.sh/zh/docs/intro/install/), 如果已安装helm，直接通过helm install进行安装即可。
 
 ```shell
-helm repo add hango https://github.com/repo/hango/hango-helm
-helm repo update
-```
-
-4、安装hango gateway
-
-```shell
+进入hango/install目录执行
 helm install --namespace hango-system --name hango-gateway ./helm/hango-gateway/ 
 ```
 
-5、确认hango网关运行状态
+4、确认hango网关运行状态
 
 ```shell
 $ kubectl get pods -n hango-system
@@ -52,7 +55,7 @@ istiod-68dd858bff-qs695            1/1     Running   0          56s
 plugin-cb485b49b-c9nrt             1/1     Running   0          59s
 ```
 
-6、卸载hango网关
+5、卸载hango网关
 
 ```shell
 helm ls --all --short | xargs -L1 helm delete --purge
