@@ -9,6 +9,11 @@ Kubernetes Version >=1.17
 ### Install with Helm
 
 1.Install slime-plugin and istio operator
+Need os linux, if you us maosx, you can download istioctl by
+
+```shell
+ curl -L https://istio.io/downloadIstio | sh - 
+```
 
 ```shell
 cd istio-install
@@ -27,20 +32,15 @@ NAME                              READY   STATUS    RESTARTS   AGE
 istio-operator-685566f48c-d8k9r   1/1     Running   0          88s
 ```
 
-3.Add Hango Gateway to the list of known chart repositories, as well as prepare the installation namespace:
-
-```shell
-helm repo add hango https://github.com/repo/hango/hango-helm
-helm repo update
-```
-
-4.Install hango gateway with default value use the following commands:
+3.Install hango gateway with default value use the following commands:
+Provided to install hango gateway through helm, first you need to install [Helm](https://helm.sh/zh/docs/intro/install/).
+If helm has been installed, install it directly through helm install.
 
 ```shell
 helm install --namespace hango-system --name hango-gateway ./helm/hango-gateway/ 
 ```
 
-5.Verify installation
+4.Verify installation
 
 ```shell
 $ kubectl get pods -n hango-system
@@ -54,7 +54,7 @@ istiod-68dd858bff-qs695            1/1     Running   0          56s
 plugin-cb485b49b-c9nrt             1/1     Running   0          59s
 ```
 
-6.Un-install
+5.Un-install
 
 ```shell
 helm ls --all --short | xargs -L1 helm delete --purge
