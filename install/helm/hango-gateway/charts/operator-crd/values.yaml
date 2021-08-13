@@ -1,5 +1,5 @@
 images:
-  gateway_proxy: hangoio/envoy-proxy-rider:master_baa64381_bf80454
+  gateway_proxy: hangoio/envoy-proxy-rider:master_baa64381_27a94f2
 labels:
   gw_cluster: demo-istio
   app: gateway-proxy
