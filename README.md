@@ -78,7 +78,7 @@ Hango 是一个云原生架构下的网关项目，聚合了以下工程：
 * [Istio](https://github.com/istio/istio) - 核心控制面，生成对应的xDS配置，下发至Envoy
 * [API Plane](https://github.com/hango-io/api-plane) - 用于生成Istio CRD以及Slime CRD
 * [Gateway Portal](https://github.com/hango-io/portal) - Hango 控制台Portal
-* [Gateway UI](https://github.com/hango-io/gateway-ui) - Hango 控制台UI
+* [Gateway UI](https://github.com/hango-io/ui) - Hango 控制台UI
 
 可以点击链接详细了解每个项目模块。
 
@@ -93,7 +93,7 @@ Hango UI提供了用户使用指南，通过使用指南用户可以方面上手
 
 ![hango-ui](images/hango-ui.png)
 
-同时，也可以通过API调用的方式进行配置，可以参考[通过OpenAPI配置Hango路由](./example/expose_api_zh.md)
+同时，也可以通过API调用的方式进行配置，可以参考[通过OpenAPI配置Hango路由](./example/expose_api.zh_CN.md)
 
 ## <span id="community">交流
 
