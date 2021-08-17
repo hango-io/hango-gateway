@@ -17,10 +17,8 @@ istiod            ClusterIP   10.109.241.243   <none>        15010/TCP,15012/TCP
 plugin            ClusterIP   10.96.91.4       <none>        80/TCP                                            23h
 slime-metrics     ClusterIP   10.102.87.122    <none>        8383/TCP,8686/TCP                                 23h
 ```
-通过主页README说明如下：
-- `gateway-proxy`
 
-其中`hango-ui`是我们的目标服务，它是NodePort类型，可以通过主机IP地址+端口访问，可以在浏览器中输入如下地址，即可访问`Hang UI`：
+其中`hango-ui`是我们的目标服务，它是NodePort类型，可以通过主机IP地址+端口访问，可以在浏览器中输入如下地址，即可访问`Hango UI`：
 ```shell
 http://{{所在k8s集群的任一主机IP}}:{{NodePort端口，这里是30829}}
 ```
