@@ -89,7 +89,7 @@ Hango 是一个云原生架构下的网关项目，聚合了以下工程：
 
 ## <span id="usage">使用
 
-Hango UI提供了用户使用指南，通过使用指南用户可以方面上手 Hango。
+Hango UI提供了用户使用指南，通过使用指南用户可以方面上手 Hango，可以参考[通过Hango UI配置Hango路由](./example/expose_api_with_ui.zh_CN.md)
 
 ![hango-ui](images/hango-ui.png)
 
