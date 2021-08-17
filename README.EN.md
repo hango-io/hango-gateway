@@ -4,7 +4,7 @@
 
 ![hango](images/logo.jpg)
 
-[中文参考](README.zh_CN.md)
+[中文参考](README.md)
 
 Hango is a high-performance, scalable, and feature-rich cloud native API gateway built on Envoy.
 

@@ -1,5 +1,14 @@
-** DO NOT OPEN NEW PULL REQUESTS AGAINST THIS REPOSITORY **
+**Description**
 
-This repository has not been marked archived/read-only, as we do periodically update the list of packages and/or their constraints. However, this repository is a metapackage, and is only used to release the product.
+Please provide a description of this PR
 
-Only open a pull request that will update existing package constraints; all other requests will be closed.
+**Affects**
+
+To help us figure out who should review this PR, please put an X in all the areas that this PR affects.
+
+- [ ] Configuration Infrastructure
+- [ ] Docs
+- [ ] Installation
+- [ ] Performance and Scalability
+- [ ] Test and Release
+- [ ] User Experience
