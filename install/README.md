@@ -37,8 +37,16 @@ Provided to install hango gateway through helm, first you need to install [Helm]
 If helm has been installed, install it directly through helm install.
 
 ```shell
+cd hango/install
 helm install --namespace hango-system --name hango-gateway ./helm/hango-gateway/ 
 ```
+
+Helm version 3.x
+```shell
+cd hango/instal
+helm install --namespace hango-system hango-gateway ./helm/hango-gateway/ 
+```
+
 
 4.Verify installation
 
