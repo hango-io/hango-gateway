@@ -41,6 +41,12 @@ istio-operator-685566f48c-d8k9r   1/1     Running   0          88s
 helm install --namespace hango-system --name hango-gateway ./helm/hango-gateway/ 
 ```
 
+如果你的Helm版本是3.x，执行
+```shell
+进入hango/install目录执行
+helm install --namespace hango-system hango-gateway ./helm/hango-gateway/ 
+```
+
 4、确认hango网关运行状态
 
 ```shell
