@@ -61,7 +61,7 @@ spec:
               name: hango-rider-plugin 
               mountPath: /usr/local/lib/rider/plugins
         podAnnotations:
-          proxy.istio.io/config: '{"discoveryAddress" : "istiod.hango-system.svc.cluster.local:15010","controlPlaneAuthPolicy":"NONE"}'
+          proxy.istio.io/config: '{"discoveryAddress" : "istiod.hango-system.svc.cluster.local:15010","controlPlaneAuthPolicy":"NONE","proxyStatsMatcher": {"inclusionPrefixes":["cluster", "listener","http"]}}'
         service:
           selector:
             app: gateway-proxy
