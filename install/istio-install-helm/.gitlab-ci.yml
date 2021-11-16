@@ -1,0 +1,42 @@
+stages:
+  - package
+
+before_script:
+  - CHART_VERSION="${CI_COMMIT_TAG:-v0.0.0-r$CI_PIPELINE_ID}"
+
+variables:
+  NAMESPACE: istio
+  RELEASE_NAME: istio
+
+helm_package:
+  stage: package
+  variables:
+    REPO_NAME: cloudnative
+    KUBECONFIG_YAML: $KUBECONFIG_DEV
+  script:
+    - mkdir -p target
+    - helm package --version="$CHART_VERSION" -d target . || exit 1
+    - echo "$CHART_VERSION"
+    - |
+      # helm upgrade -n $NAMESPACE $RELEASE_NAME . --install --create-namespace --dry-run
+
+      REPO_ADDR="$(jq -r '.repo//empty'<<<"$ONLINE_CHART_REPO")"
+      USERNAME="$(jq -r '.username//empty'<<<"$ONLINE_CHART_REPO")"
+      PASSWORD="$(jq -r '.password//empty'<<<"$ONLINE_CHART_REPO")"
+
+      helm repo add --insecure-skip-tls-verify --username="$USERNAME" \
+          --password="$PASSWORD" "$REPO_NAME" "$REPO_ADDR/chartrepo/$REPO_NAME" --force-update
+      helm push --insecure target/$(cd target; ls | grep tgz) "$REPO_NAME" || exit 1
+    - |
+      REPO_ADDR="$(jq -r '.repo//empty'<<<"$ONLINE_CHART_REPO")"
+      USERNAME="$(jq -r '.username//empty'<<<"$ONLINE_CHART_REPO")"
+      PASSWORD="$(jq -r '.password//empty'<<<"$ONLINE_CHART_REPO")"
+
+      helm repo add --insecure-skip-tls-verify --username="$USERNAME" \
+          --password="$PASSWORD" "$REPO_NAME" "$REPO_ADDR/chartrepo/$REPO_NAME" --force-update
+      helm push --insecure target/$(cd target; ls | grep tgz) "$REPO_NAME" || exit 1
+
+  only:
+    - develop
+    - tags
+
