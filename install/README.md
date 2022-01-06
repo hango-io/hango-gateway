@@ -6,68 +6,83 @@ We use helm to install gateway on kubernetes. If you do not have a kubernetes, y
 
 Kubernetes Version >=1.17
 
-### Install with Helm
+### Install with Shell
 
-1.Install slime-plugin and istio operator
-Need os linux, if you us maosx, you can download istioctl by
-
-```shell
- curl -L https://istio.io/downloadIstio | sh - 
+1. Go to the "hango-gateway/install" directory. The directory structure tree is as follows
+```xml
+install
+├─common
+├─helm
+├─init-hango
+├─istio
+├─istioctl
+├─slime
+├─install.sh
+├─check.sh
+└─uninstall.sh
 ```
+2. You will see three scripts for install (install.sh), check status (check.sh), and uninstall (uninstall.sh) respectively. You can directly execute the command
 
+Note: Make sure you have sufficient permissions before executing the script
 ```shell
-cd istio-install
-./install.sh
+sh install.sh
 ```
-
-2.Verifiy slime-plugin and istio alreay running
-
+3. After the script is executed, run the following command to verify the running status of the Hango gateway
 ```shell
-$ kubectl -n mesh-operator get pod
+sh check.sh
+```
+The normal running status is as follows. If the container is not ready now, wait for a while and check it again
+```shell
+[install-check][14:50:49]
+========= pods in namespace[mesh-operator] show below =========
 NAME                          READY   STATUS    RESTARTS   AGE
-slime-boot-66fcdfdc9b-bwwhc   1/1     Running   0          88s
+slime-boot-5bb69d5496-mzr5c   1/1     Running   0          101s
 
-$ kubectl -n istio-operator get pod
+[install-check][14:50:49]
+========= pods in namespace[istio-operator] show below =========
 NAME                              READY   STATUS    RESTARTS   AGE
-istio-operator-685566f48c-d8k9r   1/1     Running   0          88s
-```
+istio-operator-6c7d5b96f9-prfjq   1/1     Running   0          102s
 
-3.Install hango gateway with default value use the following commands:
-Provided to install hango gateway through helm, first you need to install [Helm](https://helm.sh/zh/docs/intro/install/).
-If helm has been installed, install it directly through helm install.
-
-```shell
-cd hango/install
-helm install --namespace hango-system --name hango-gateway ./helm/hango-gateway/ 
-```
-
-Helm version 3.x
-```shell
-cd hango/instal
-helm install --namespace hango-system hango-gateway ./helm/hango-gateway/ 
-```
-
-
-4.Verify installation
-
-```shell
-$ kubectl get pods -n hango-system
+[install-check][14:50:49]
+========= pods in namespace[hango-system] show below =========
 NAME                               READY   STATUS    RESTARTS   AGE
-gateway-proxy-7756966795-bd8qp     1/1     Running   0          61s
-hango-api-plane-5b58699494-8ngwv   1/1     Running   0          61s
-hango-portal-8df74744b-mf6lr       1/1     Running   0          43s
-hango-ui-d68d97c97-tp2zf           1/1     Running   0          61s
-istio-e2e-app-6b954b4bb5-mmf87     1/1     Running   0          61s
-istiod-68dd858bff-qs695            1/1     Running   0          56s
-plugin-cb485b49b-c9nrt             1/1     Running   0          59s
+gateway-proxy-55887cb579-mv9xh     1/1     Running   0          87s
+hango-api-plane-6c4554cfc4-ndnx5   1/1     Running   0          101s
+hango-portal-597bb489d6-45b2r      1/1     Running   0          101s
+hango-ui-75458cc7dc-b4x6b          1/1     Running   0          101s
+istio-e2e-app-85bb49bf75-t7slt     1/1     Running   0          101s
+istiod-697b5c4456-67l92            1/1     Running   0          95s
+plugin-75fcb44f68-w9x4x            1/1     Running   0          94s
 ```
 
-5.Un-install
+### The other way to install Hango gateway
+1. Please configure K8S resources of Hango gateway by referring to the script content
 
+### Uninstall with Shell
+1. Go to "hango-gateway/install" directory
+2. Run the script to uninstall hango gateway
+
+Note: Make sure you have sufficient permissions before executing the script
 ```shell
-helm ls --all --short | xargs -L1 helm delete --purge
+sh uninstall.sh
+```
+3. After the script is executed, run the following command to check the running status of the Hango gateway
+```shell
+sh check.sh
+```
+After the uninstallation is complete, the namespaces and all containers under them will be deleted. If k8s resources still exist, you can try uninstall.sh script again or manually delete the resources
+```shell
+[install-check][14:56:29]
+========= pods in namespace[mesh-operator] show below =========
+No resources found in mesh-operator namespace.
 
-./istioctl x uninstall --purge
+[install-check][14:56:29]
+========= pods in namespace[istio-operator] show below =========
+No resources found in istio-operator namespace.
+
+[install-check][14:56:29]
+========= pods in namespace[hango-system] show below =========
+No resources found in hango-system namespace.
 ```
 
 ## Installing on Docker

@@ -1,0 +1,19 @@
+---
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: hango-istio
+  namespace: hango-system
+spec:
+  components:
+    pilot:
+      k8s:
+        resources:
+          requests:
+            memory: 2048Mi
+  meshConfig:
+    rootNamespace: hango-system
+  profile: minimal
+  values:
+    global:
+      istioNamespace: hango-system

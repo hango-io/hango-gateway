@@ -2,69 +2,84 @@
 
 ## 前置条件
 
-目前版本支持基于Kubernetes进行安装，如果没有Kubernetes环境，可以采用[minikube](https://minikube.sigs.k8s.io/docs/start/) 进行安装。对于Kubernetes的版本，我们要求版本至少是1.17 版本。
+1.目前版本支持基于Kubernetes进行安装，如果没有Kubernetes环境，可以采用[minikube](https://minikube.sigs.k8s.io/docs/start/) 进行安装。对于Kubernetes的版本，我们要求版本至少是1.17 版本。\
+2.请确保已安装helm。
 
-### Helm 安装
+### 安装hango网关
 
-1、安装slime-plugin 和 istio operator
-默认提供系统os支持为linux
-
-```shell
-cd istio-install
-./install.sh
+1、进入"hango-gateway/install"目录下，目录结构树如下
+```xml
+install
+├─common
+├─helm
+├─init-hango
+├─istio
+├─istioctl
+├─slime
+├─install.sh
+├─check.sh
+└─uninstall.sh
 ```
-
-如果用户使用其他os，可以通过以下命令，下载平台相关的istioctl即可。
-
+2、您将看到3个脚本分别用于安装（install.sh）、检查状态（check.sh）、卸载（uninstall.sh），可直接执行命令\
+注意：在脚本执行前请确保权限足够
 ```shell
-curl -L https://istio.io/downloadIstio | sh -
+sh install.sh
 ```
-
-2、验证slime和istio operator的运行状态，确保STATUS显示为Running状态
-
+3、等待脚本执行完毕后，可以通过执行下面的命令查看hango网关的运行状态
 ```shell
-$ kubectl -n mesh-operator get pod
+sh check.sh
+```
+正常的运行状态如下，若容器未就绪，请再耐心等待一段时间再检查
+```shell
+[install-check][14:50:49]
+========= pods in namespace[mesh-operator] show below =========
 NAME                          READY   STATUS    RESTARTS   AGE
-slime-boot-66fcdfdc9b-bwwhc   1/1     Running   0          88s
+slime-boot-5bb69d5496-mzr5c   1/1     Running   0          101s
 
-$ kubectl -n istio-operator get pod
+[install-check][14:50:49]
+========= pods in namespace[istio-operator] show below =========
 NAME                              READY   STATUS    RESTARTS   AGE
-istio-operator-685566f48c-d8k9r   1/1     Running   0          88s
-```
+istio-operator-6c7d5b96f9-prfjq   1/1     Running   0          102s
 
-3、安装hango gateway
-
-提供通过helm方式安装hango gateway, 你需要首先安装[Helm](https://helm.sh/zh/docs/intro/install/), 如果已安装helm，直接通过helm install进行安装即可。
-
-```shell
-进入hango/install目录执行
-helm install --namespace hango-system --name hango-gateway ./helm/hango-gateway/ 
-```
-
-如果你的Helm版本是3.x，执行
-```shell
-进入hango/install目录执行
-helm install --namespace hango-system hango-gateway ./helm/hango-gateway/ 
-```
-
-4、确认hango网关运行状态
-
-```shell
-$ kubectl get pods -n hango-system
+[install-check][14:50:49]
+========= pods in namespace[hango-system] show below =========
 NAME                               READY   STATUS    RESTARTS   AGE
-gateway-proxy-7756966795-bd8qp     1/1     Running   0          61s
-hango-api-plane-5b58699494-8ngwv   1/1     Running   0          61s
-hango-portal-8df74744b-mf6lr       1/1     Running   0          43s
-hango-ui-d68d97c97-tp2zf           1/1     Running   0          61s
-istio-e2e-app-6b954b4bb5-mmf87     1/1     Running   0          61s
-istiod-68dd858bff-qs695            1/1     Running   0          56s
-plugin-cb485b49b-c9nrt             1/1     Running   0          59s
+gateway-proxy-55887cb579-mv9xh     1/1     Running   0          87s
+hango-api-plane-6c4554cfc4-ndnx5   1/1     Running   0          101s
+hango-portal-597bb489d6-45b2r      1/1     Running   0          101s
+hango-ui-75458cc7dc-b4x6b          1/1     Running   0          101s
+istio-e2e-app-85bb49bf75-t7slt     1/1     Running   0          101s
+istiod-697b5c4456-67l92            1/1     Running   0          95s
+plugin-75fcb44f68-w9x4x            1/1     Running   0          94s
 ```
 
-5、卸载hango网关
+### 其他方式安装hango网关
 
+1、请参考脚本内容配置hango的k8s资源
+
+### 卸载hango网关
+
+1、进入"hango-gateway/install"目录下\
+2、执行命令运行脚本卸载hango网关\
+注意：在脚本执行前请确保权限足够
 ```shell
-helm ls --all --short | xargs -L1 helm delete --purge
+sh uninstall.sh
+```
+3、等待脚本执行完毕后，可以通过执行下面的命令查看hango网关的运行状态
+```shell
+sh check.sh
+```
+卸载完成后，命名空间和其下的容器将全部删除，正常状态如下，若仍然存于未删除资源，您可以再次执行uninstall.sh脚本或手动删除资源
+```shell
+[install-check][14:56:29]
+========= pods in namespace[mesh-operator] show below =========
+No resources found in mesh-operator namespace.
 
-./istioctl x uninstall --purge
+[install-check][14:56:29]
+========= pods in namespace[istio-operator] show below =========
+No resources found in istio-operator namespace.
+
+[install-check][14:56:29]
+========= pods in namespace[hango-system] show below =========
+No resources found in hango-system namespace.
 ```
