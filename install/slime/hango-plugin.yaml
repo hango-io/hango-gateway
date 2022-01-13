@@ -1,0 +1,16 @@
+---
+apiVersion: config.netease.com/v1alpha1
+kind: SlimeBoot
+metadata:
+  name: hango-plugin
+  namespace: hango-system
+spec:
+  namespace: hango-system
+  image: 
+    pullPolicy: Always
+    repository: docker.io/bcxq/slime
+    tag: v0.1-7c913b2
+  module:
+  - name: plugin
+    plugin:
+      enable: true
