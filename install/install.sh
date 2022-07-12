@@ -40,14 +40,13 @@ function helm_version_judge() {
     fi
 }
 
-function prepare_for_istioctl() {
-    if [ ! -f "${work_dir}"/istioctl/istioctl ]; then
-        log "\"istioctl\" cmd is missing, please download it first."
-        return 1
-    else
-        chmod +x "${work_dir}"/istioctl/istioctl
-        return 0
-    fi
+//prepare crds
+function prepare_for_crds() {
+    cd crds/
+    kubectl apply -f crd-10.yaml
+    kubectl apply -f crd-11.yaml
+    kubectl apply -f crd-17.yaml
+    kubectl apply -f crd-slime.yaml
 }
 
 function helm_install_for_hango_component() {
@@ -64,54 +63,22 @@ function helm_install_for_hango_component() {
     fi
 }
 
-function install_istiod() {
-    # block for installing
-    "${work_dir}"/istioctl/istioctl install -y -f "${work_dir}"/istio/istiod.yaml
-}
-
-function install_gateway_proxy() {
-    "${work_dir}"/istioctl/istioctl install -y -f "${work_dir}"/istio/proxy.yaml
-}
 
 function init_for_namespaces() {
     kubectl create ns "${HANGO_NAMESPACE}"
     kubectl create ns "${MESH_OPERATOR_NAMESPACE}"
 }
 
-function install_istio_operator() {
-    "${work_dir}"/istioctl/istioctl operator init --watchedNamespaces="${HANGO_NAMESPACE}"
-    if [[ $? -ne 0 ]]; then
-        log "Istio-Operator init failed, please check manually."
-        return 1
-    fi
-}
-
-function init_for_slime() {
-    sh "${work_dir}"/slime/init_for_slime.sh "apply"
-    if [[ $? -eq 0 ]]; then
-        kubectl apply -f "${work_dir}"/slime/hango-plugin.yaml
-    else
-        log "Init slime fail, please check your network and resources."
-    fi
-}
 
 # main entry for this shell script
 function main() {
     check_kubectl_ready || exit 1
     get_helm_version || exit 1
-    prepare_for_istioctl || exit 1
+    prepare_for_crds || exit 1
     log "start to init namespaces."
     init_for_namespaces
-    log "start to init slime resources."
-    init_for_slime
-    log "start to init hango control plane components(asynchronously), you are supposed to check their status manually."
+    log "start to init hango components(asynchronously), you are supposed to check their status manually."
     helm_install_for_hango_component
-    log "start to init istio-operator, which is specially for istio components installation."
-    install_istio_operator || exit 1
-    log "start to init istiod."
-    install_istiod
-    log "start to hango data plane component."
-    install_gateway_proxy
     log "install finished!"
 }
 
