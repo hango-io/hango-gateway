@@ -1,4 +1,4 @@
-apiVersion: v2
+apiVersion: v3
 name: hango-gateway
 description: A Helm chart for Kubernetes
 

@@ -2,21 +2,49 @@
 apiVersion: microservice.slime.io/v1alpha1
 kind: PluginManager
 metadata:
-  name: gw-cluster-{{ .Values.labels.gw_cluster }}
+  name: gw-cluster-{{ .Values.gateway_cluster }}
   namespace: {{ .Values.namespace }}
 spec:
   plugin:
   - enable: true
-    name: envoy.fault
+    inline:
+      settings:
+        decode_headers_to_state:
+        - name: :path
+          rename: x-envoy-origin-path
+        - name: :method
+          rename: x-envoy-origin-method
+        - name: :authority
+          rename: x-envoy-origin-host
+        encode_headers_to_state:
+        - name: :status
+          rename: x-envoy-origin-status
+        route_metadata_to_state:
+        - proxy.filters.http.metadatahub
+    listenerType: Gateway
+    name: proxy.filters.http.metadatahub
+    port: 80
+  - enable: true
+    name: envoy.filters.http.fault
+  - enable: true
+    listenerType: Gateway
+    name: proxy.filters.http.detailed_stats
+    port: 80
   - enable: true
     inline:
       settings:
         ip_source_header: x-hango-real-ip
+    listenerType: Gateway
     name: proxy.filters.http.iprestriction
+    port: 80
   - enable: true
+    listenerType: Gateway
     name: proxy.filters.http.locallimit
+    port: 80
   - enable: true
+    listenerType: Gateway
     name: proxy.filters.http.staticdowngrade
+    port: 80
   - enable: true
     name: proxy.filters.http.rider
     inline:
@@ -29,5 +57,7 @@ spec:
               filename: /usr/local/lib/rider/plugins/ua-restriction.lua
           name: ua-restriction
           config: {}
+    listenerType: Gateway
+    port: 80
   workloadLabels:
-    gw_cluster: {{ .Values.labels.gw_cluster }}
+    gw_cluster: {{ .Values.gw_cluster }}

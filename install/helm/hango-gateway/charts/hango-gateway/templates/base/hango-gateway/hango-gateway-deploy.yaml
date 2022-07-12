@@ -156,3 +156,403 @@ spec:
       schedulerName: default-scheduler
       securityContext: {}
       terminationGracePeriodSeconds: 30
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: istiod
+    istio: istiod
+    istio.io/rev: {{ .Values.istio_rev }}
+  name: istiod-{{ .Values.istio_rev }}
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    matchLabels:
+      app: istiod
+      istio.io/rev: {{ .Values.istio_rev }}
+  template:
+    metadata:
+      annotations:
+        prometheus.io/port: "15014"
+        prometheus.io/scrape: "true"
+        sidecar.istio.io/inject: "false"
+      labels:
+        app: istiod
+        istio: istiod
+        istio.io/rev: {{ .Values.istio_rev }}
+        sidecar.istio.io/inject: "false"
+    spec:
+      containers:
+        - args:
+            - discovery
+            - --monitoringAddr=:15014
+            - --log_output_level=default:info
+            - --domain
+            - cluster.local
+            - --keepaliveMaxServerConnectionAge
+            - 30m
+          env:
+            - name: KUBE_NAMESPACE_WHITELIST
+              value: {{ .Values.namespace }}
+            - name: REVISION
+              value: {{ .Values.istio_rev }}
+            - name: JWT_POLICY
+              value: first-party-jwt
+            - name: PILOT_CERT_PROVIDER
+              value: istiod
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: SERVICE_ACCOUNT
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.serviceAccountName
+            - name: KUBECONFIG
+              value: /var/run/secrets/remote/config
+            - name: PILOT_TRACE_SAMPLING
+              value: "1"
+            - name: PILOT_ENABLE_PROTOCOL_SNIFFING_FOR_OUTBOUND
+              value: "true"
+            - name: PILOT_ENABLE_PROTOCOL_SNIFFING_FOR_INBOUND
+              value: "false"
+            - name: ISTIOD_ADDR
+              value: istiod.{{ .Values.namespace }}.svc.cluster.local:15010
+            - name: STRICT_ISTIO_REV
+              value: "true"
+            - name: PILOT_FILTER_GATEWAY_CLUSTER_CONFIG
+              value: "true"
+            - name: DISABLE_AUTH_DEBUG
+              value: "true"
+            - name: MCP_INC_PUSH
+              value: "true"
+            - name: ISTIO_GPRC_MAXRECVMSGSIZE
+              value: "104857600"
+            - name: MCP_XDS_GPRC_MAXRECVMSGSIZE
+              value: "104857600"
+            - name: PILOT_DISABLE_CORS_FILTER
+              value: "true"
+            - name: PILOT_DISABLE_FAULT_FILTER
+              value: "true"
+            - name: PILOT_ENABLE_METADATA_EXCHANGE
+              value: "false"
+            - name: PILOT_ENABLE_CDS_CACHE
+              value: "false"
+          image:  "{{ .Values.images.istiod_image }}"
+          name: discovery
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+            - containerPort: 15010
+              protocol: TCP
+            - containerPort: 15017
+              protocol: TCP
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsGroup: 1337
+            runAsNonRoot: true
+            runAsUser: 1337
+          volumeMounts:
+            - mountPath: /var/run/secrets/istio-dns
+              name: local-certs
+            - mountPath: /etc/cacerts
+              name: cacerts
+              readOnly: true
+            - mountPath: /var/run/secrets/remote
+              name: istio-kubeconfig
+              readOnly: true
+            - mountPath: /etc/istio/config
+              name: config-volume
+      securityContext:
+        fsGroup: 1337
+      serviceAccount: istiod-service-account
+      serviceAccountName: istiod-service-account
+      volumes:
+        - emptyDir:
+            medium: Memory
+          name: local-certs
+        - name: cacerts
+          secret:
+            optional: true
+            secretName: cacerts
+        - name: istio-kubeconfig
+          secret:
+            optional: true
+            secretName: istio-kubeconfig
+        - configMap:
+            defaultMode: 420
+            name: istio-{{ .Values.istio_rev }}
+          name: config-volume
+      restartPolicy: Always
+      dnsPolicy: ClusterFirstWithHostNet
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: slime
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: slime
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: slime
+  template:
+    metadata:
+      labels:
+        app: slime
+      annotations:
+        kubectl.kubernetes.io/default-logs-container: slime
+        kubectl.kubernetes.io/default-container: slime
+    spec:
+      serviceAccountName: slime
+      containers:
+        - name: slime
+          image: "{{ .Values.images.slime_image }}"
+          imagePullPolicy: IfNotPresent
+          command:
+            - /manager
+          args:
+            - --enable-leader-election
+          env:
+            - name: WATCH_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "slime"
+            - name: ENABLE_INC_PUSH
+              value: "true"
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+            - name: aux-port
+              containerPort: 8081
+              protocol: TCP
+            - name: log-source-port
+              containerPort: 8082
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: "/modules/readyz"
+              port: aux-port
+            initialDelaySeconds: 20
+            periodSeconds: 5
+            failureThreshold: 1
+          livenessProbe:
+            httpGet:
+              path: "/modules/livez"
+              port: aux-port
+            initialDelaySeconds: 20
+            periodSeconds: 5
+            failureThreshold: 2
+          volumeMounts:
+            - mountPath: /etc/slime/config
+              name: config-volume
+      volumes:
+        - name: config-volume
+          configMap:
+            name: slime
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: hango-proxy
+    gw_cluster: {{ .Values.gateway_cluster }}
+    istio: ingressgateway
+  name: hango-proxy
+  namespace: {{ .Values.namespace }}
+spec:
+  progressDeadlineSeconds: 600
+  replicas: {{ .Values.replicas }}
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: hango-proxy
+      gw_cluster: {{ .Values.gateway_cluster }}
+      istio: ingressgateway
+  strategy:
+    rollingUpdate:
+      maxSurge: 100%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: "19000"
+        prometheus.io/scrape: "true"
+      labels:
+        app: hango-proxy
+        gw_cluster: {{ .Values.gateway_cluster }}
+        istio: ingressgateway
+        system/app: {{ .Values.gateway_cluster }}
+    spec:
+      containers:
+      - args:
+        - proxy
+        - router
+        - --templateFile
+        - /etc/envoy/envoy.yaml
+        - --proxyLogLevel=warning
+        - --proxyComponentLogLevel=misc:error
+        - --log_output_level=default:info
+        - --serviceCluster
+        - {{.Values.gateway_cluster}}
+        - --concurrency
+        - "8"
+        env:
+        - name: JWT_POLICY
+          value: first-party-jwt
+        - name: PILOT_CERT_PROVIDER
+          value: istiod
+        - name: ISTIO_META_UNPRIVILEGED_POD
+          value: ""
+        - name: CA_ADDR
+          value: {{$.Values.gateway_xds_service_address}}:{{$.Values.gateway_xds_service_security_port}}
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: INSTANCE_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.podIP
+        - name: HOST_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.hostIP
+        - name: SERVICE_ACCOUNT
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.serviceAccountName
+        image: "{{ .Values.images.hango_proxy_image }}"
+        imagePullPolicy: IfNotPresent
+        name: hango-proxy
+        ports:
+        - containerPort: 15021
+          protocol: TCP
+        - containerPort: 8080
+          protocol: TCP
+          name: http
+        - containerPort: 8443
+          protocol: TCP
+          name: https
+        - containerPort: 19000
+          name: stats
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 30
+          httpGet:
+            path: /ready
+            port: 19000
+            scheme: HTTP
+          initialDelaySeconds: 20
+          periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 5
+        livenessProbe:
+          failureThreshold: 5
+          httpGet:
+            path: "/alive"
+            port: 19000
+            scheme: "HTTP"
+          initialDelaySeconds: 200
+          periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 5
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /etc/envoy/envoy.yaml
+          name: envoy-config
+          subPath: envoy.yaml
+        - mountPath: /etc/istio/proxy
+          name: istio-envoy
+        - mountPath: /var/lib/istio/data
+          name: istio-data
+        - mountPath: /var/run/secrets/istio
+          name: istiod-ca-cert
+        - mountPath: /etc/istio/pod
+          name: podinfo
+        - mountPath: /etc/istio/ingressgateway-certs
+          name: ingressgateway-certs
+          readOnly: true
+        - mountPath: /etc/istio/ingressgateway-ca-certs
+          name: ingressgateway-ca-certs
+          readOnly: true
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: "hango-proxy-config"
+        name: envoy-config
+      - configMap:
+          defaultMode: 420
+          name: istio-ca-root-cert
+        name: istiod-ca-cert
+      - downwardAPI:
+          defaultMode: 420
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.labels
+            path: labels
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.annotations
+            path: annotations
+        name: podinfo
+      - emptyDir: { }
+        name: istio-envoy
+      - emptyDir: { }
+        name: istio-data
+      - name: ingressgateway-certs
+        secret:
+          defaultMode: 420
+          optional: true
+          secretName: istio-ingressgateway-certs
+      - name: ingressgateway-ca-certs
+        secret:
+          defaultMode: 420
+          optional: true
+          secretName: istio-ingressgateway-ca-certs
