@@ -60,4 +60,4 @@ spec:
     listenerType: Gateway
     port: 80
   workloadLabels:
-    gw_cluster: {{ .Values.gw_cluster }}
+    gw_cluster: {{ .Values.gateway_cluster }}
