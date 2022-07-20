@@ -10,6 +10,10 @@ source "${work_dir}"/common/common.sh
 helm_version="v0.0.0"
 HANGO_NAMESPACE="hango-system"
 MESH_OPERATOR_NAMESPACE="mesh-operator"
+# install shell home
+INIT_SHELL_DIR=$(cd "$(dirname "$0")";pwd)
+# crd home
+CRD_DIR=${INIT_SHELL_DIR}/crds
 
 function check_kubectl_ready() {
     kubectl version >/dev/null 2>&1
@@ -40,13 +44,15 @@ function helm_version_judge() {
     fi
 }
 
-//prepare crds
+# prepare crds
 function prepare_for_crds() {
-    cd crds/
-    kubectl apply -f crd-10.yaml
-    kubectl apply -f crd-11.yaml
-    kubectl apply -f crd-17.yaml
-    kubectl apply -f crd-slime.yaml
+    for crd in `ls "${CRD_DIR}"`; do
+        kubectl apply -f ${CRD_DIR}/${crd}
+        if [ "$?" -ne 0 ]; then
+            echo "kubectl apply crd failed, crd_name: ${CRD_DIR}/${crd}"
+            return 1
+        fi
+    done
 }
 
 function helm_install_for_hango_component() {
