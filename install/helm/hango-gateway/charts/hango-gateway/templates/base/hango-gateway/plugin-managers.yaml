@@ -4,6 +4,8 @@ kind: PluginManager
 metadata:
   name: gw-cluster-{{ .Values.gateway_cluster }}
   namespace: {{ .Values.namespace }}
+  labels:
+    istio.io/rev: gw-1.12
 spec:
   plugin:
   - enable: true
