@@ -38,8 +38,8 @@ hango-api-plane-6c4554cfc4-ndnx5   1/1     Running   0          101s
 hango-portal-597bb489d6-45b2r      1/1     Running   0          101s
 hango-ui-75458cc7dc-b4x6b          1/1     Running   0          101s
 istio-e2e-app-85bb49bf75-t7slt     1/1     Running   0          101s
-hango-istiod-697b5c4456-67l92            1/1     Running   0          95s
-slime-75fcb44f68-w9x4x            1/1     Running   0          94s
+hango-istiod-697b5c4456-67l92      1/1     Running   0          95s
+slime-75fcb44f68-w9x4x             1/1     Running   0          94s
 ```
 
 ### 其他方式安装hango网关
