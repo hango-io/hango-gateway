@@ -165,7 +165,7 @@ metadata:
     app: istiod
     istio: istiod
     istio.io/rev: {{ .Values.istio_rev }}
-  name: istiod-{{ .Values.istio_rev }}
+  name: hango-istiod
   namespace: {{ .Values.namespace }}
 spec:
   selector:

@@ -11,11 +11,9 @@
 ```xml
 install
 ├─common
+├─crds
 ├─helm
 ├─init-hango
-├─istio
-├─istioctl
-├─slime
 ├─install.sh
 ├─check.sh
 └─uninstall.sh
@@ -31,15 +29,6 @@ sh check.sh
 ```
 正常的运行状态如下，若容器未就绪，请再耐心等待一段时间再检查
 ```shell
-[install-check][14:50:49]
-========= pods in namespace[mesh-operator] show below =========
-NAME                          READY   STATUS    RESTARTS   AGE
-slime-boot-5bb69d5496-mzr5c   1/1     Running   0          101s
-
-[install-check][14:50:49]
-========= pods in namespace[istio-operator] show below =========
-NAME                              READY   STATUS    RESTARTS   AGE
-istio-operator-6c7d5b96f9-prfjq   1/1     Running   0          102s
 
 [install-check][14:50:49]
 ========= pods in namespace[hango-system] show below =========
@@ -49,8 +38,8 @@ hango-api-plane-6c4554cfc4-ndnx5   1/1     Running   0          101s
 hango-portal-597bb489d6-45b2r      1/1     Running   0          101s
 hango-ui-75458cc7dc-b4x6b          1/1     Running   0          101s
 istio-e2e-app-85bb49bf75-t7slt     1/1     Running   0          101s
-istiod-697b5c4456-67l92            1/1     Running   0          95s
-plugin-75fcb44f68-w9x4x            1/1     Running   0          94s
+hango-istiod-697b5c4456-67l92            1/1     Running   0          95s
+slime-75fcb44f68-w9x4x            1/1     Running   0          94s
 ```
 
 ### 其他方式安装hango网关
@@ -71,14 +60,6 @@ sh check.sh
 ```
 卸载完成后，命名空间和其下的容器将全部删除，正常状态如下，若仍然存于未删除资源，您可以再次执行uninstall.sh脚本或手动删除资源
 ```shell
-[install-check][14:56:29]
-========= pods in namespace[mesh-operator] show below =========
-No resources found in mesh-operator namespace.
-
-[install-check][14:56:29]
-========= pods in namespace[istio-operator] show below =========
-No resources found in istio-operator namespace.
-
 [install-check][14:56:29]
 ========= pods in namespace[hango-system] show below =========
 No resources found in hango-system namespace.
