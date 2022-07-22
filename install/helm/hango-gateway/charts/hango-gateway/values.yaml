@@ -7,7 +7,7 @@ images:
   hango_ui_image: docker.io/hangoio/hango-ui:v1.0.1-f7ddf75e
   istiod_image: docker.io/hangoio/istiod:hango-1.0.0-rc1
   slime_image: docker.io/hangoio/slime:v0.1.2-d6140060
-  hango_proxy_image: hangoio/envoy-proxy:v1.0.0-ab2b96c-amd64
+  hango_proxy_image: hangoio/envoy-proxy:v1.0.1-04c92f1-amd64
 
 
 namespace: hango-system
