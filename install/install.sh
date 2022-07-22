@@ -69,10 +69,49 @@ function helm_install_for_hango_component() {
     fi
 }
 
+function verify_hango_install() {
+    while true
+    do
+       pod_number=`kubectl -n $HANGO_NAMESPACE get pods | grep Running | wc -l`
+       if [[ $pod_number -ge 7 ]]; then
+          echo "hango pod running"
+          break
+       fi
+       sleep 10
+    done    
+}
+
+function init_hango(){
+    HANGO_NAMESPACE=hango-system
+    HANGO_PORTAL=`kubectl get svc -n $HANGO_NAMESPACE  | grep hango-portal | awk '{print $3}'`
+    HANGO_API_PLANE=`kubectl get svc -n $HANGO_NAMESPACE  | grep hango-api-plane | awk '{print $3}'`
+    HANGO_PROXY=`kubectl get svc -n $HANGO_NAMESPACE  | grep hango-proxy | awk '{print $3}'`
+    result=$(curl -s -w "%{http_code}" -o /dev/null -X POST "http://${HANGO_PORTAL}:80/gdashboard?Action=CreateGateway&Version=2018-08-09" \
+    -H 'Content-Type: application/json'  \
+    -H "x-auth-accountId:admin" \
+    -H "x-auth-tenantId: 1" \
+    -H "x-auth-projectId: 1" \
+    -d '{
+        "GwName":"hango_envoy_gateway",
+        "ApiPlaneAddr":"http://'"$HANGO_API_PLANE"':10880",
+        "GwClusterName":"demo-istio",
+        "GwAddr":"http://'"$HANGO_PROXY"'",
+        "GwType":"envoy",
+        "HostList": [
+            "istio.com"
+        ]
+    }')
+    if [[ $result -eq 200 ]]; then
+        echo "Init hango success."
+    else
+        log "Init error, init_hango can be run independently "
+        exit 1
+    fi
+}
+
 
 function init_for_namespaces() {
     kubectl create ns "${HANGO_NAMESPACE}"
-    kubectl create ns "${MESH_OPERATOR_NAMESPACE}"
 }
 
 
@@ -86,6 +125,10 @@ function main() {
     log "start to init hango components(asynchronously), you are supposed to check their status manually."
     helm_install_for_hango_component
     log "install finished!"
+    log "stat verify hango install"
+    verify_hango_install
+    log "hango verfied ok"
+    init_hango
 }
 
 # start installation process
