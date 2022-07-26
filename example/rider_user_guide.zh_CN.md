@@ -2,7 +2,7 @@
 
 ## 一、插件需求
 
-实现一个UA黑白名单插件。支持控制台配置UA黑名单/白名单。
+实现一个URI黑白名单插件。支持控制台配置URI黑名单/白名单。
 
 ## 二、编写lua插件、调试
 
@@ -10,122 +10,117 @@
 
 rider是hango团队开源的自定义插件包，通过rider结合envoy热加载能力，动态扩展自定义插件。
 
-（1）2.1.1 在rider根目录下，建立plugins/ua-restriction.lua 目录用于存放插件代码
+（1）2.1.1 在rider根目录下，建立plugins/uri-restriction.lua 目录用于存放插件代码
 
-创建plugins/ua-restriction.lua，添加如下代码
+创建plugins/uri-restriction.lua，添加如下代码
 
 包括两部分：插件schema配置以及插件执行逻辑配置；schema配置又可以分为base_json_schema全局配置以及route_json_schema路由配置。全局配置用于配置插件的公共配置，例如外部认证服务等全局配置；路由配置为插件的核心配置，大多数场景只需要编写route_json_schema即可。
 
-插件执行逻辑，依赖rider封装的sdk，进行对应的插件链路开发。我们的例子便是，通过在gateway的请求链路上，获取user-agent对应的header进行配置对比，如果不存在user-agent header，则返回400，“user-agent not found”，如果匹配ua黑名单则返回403 “Forbidden”
+插件执行逻辑，依赖rider封装的sdk，进行对应的插件链路开发。我们的例子便是，对请求URI进行黑白名单控制；当请求URI中的字符符合白名单规则，优先放行；若请求URI中的字符未匹配白名单规则且匹配黑名单规则，则请求返回403错误码，并相应Forbidden字符串
 
 ```lua
-require("rider")
+--[[
+引入v2 rider版本
+v2版本相对v1版本将request和response分为header和body部分处理，提升不同场景的插件性能
+-- ]] 
+require('rider.v2')
+
+-- 定义本地变量
 local envoy = envoy
-local get_req_header = envoy.req.get_header
-local ipairs = ipairs
-local re_find = string.find
+local request = envoy.req
 local respond = envoy.respond
-local logDebug = envoy.logDebug
 
-local uaRestrictionHandler = {}
-
+-- 定义本地常量
+local NO_MATCH = 0
+local MATCH_WHITELIST = 1
+local MATCH_BLACKLIST = 2
 local BAD_REQUEST = 400
 local FORBIDDEN = 403
 
-local MATCH_EMPTY     = 0
-local MATCH_WHITELIST = 1
-local MATCH_BLACKLIST = 2
+local uriRestrictionHandler = {}
 
-local json_validator = require("rider.json_validator")
+uriRestrictionHandler.version = 'v2'
 
+local json_validator = require('rider.json_validator')
+
+-- 定义全局配置
 local base_json_schema = {
     type = 'object',
-    properties = {},
+    properties = {}
 }
 
+-- 定义路由级配置
 local route_json_schema = {
     type = 'object',
     properties = {
-      allowlist = {
-        type = 'array',
-        items = {
-          type = 'string',
+        allowlist = {
+            type = 'array',
+            items = {
+                type = 'string'
+            }
         },
-      },
-      denylist = {
-        type = 'array',
-        items = {
-          type = 'string',
-        },
-      },
-    },
+        denylist = {
+            type = 'array',
+            items = {
+                type = 'string'
+            }
+        }
+    }
 }
+
 json_validator.register_validator(base_json_schema, route_json_schema)
 
---- strips whitespace from a string.
-local function strip(str)
-  if str == nil then
-    return ""
-  end
-  str = tostring(str)
-  if #str > 200 then
-    return str:gsub("^%s+", ""):reverse():gsub("^%s+", ""):reverse()
-  else
-    return str:match("^%s*(.-)%s*$")
-  end
-end
-
-local function get_user_agent()
-  return get_req_header("user-agent")
-end
-
-local function examine_agent(user_agent, allowlist, denylist)
-  user_agent = strip(user_agent)
-
-  if allowlist then
-    for _, rule in ipairs(allowlist) do
-      logDebug("allowist: compare "..rule.." and "..user_agent)
-      if re_find(user_agent, rule) then
-        return MATCH_WHITELIST
-      end
+-- 定义本地校验uri黑白名单方法
+local function checkUriPath(uriPath, allowlist, denylist)
+    if allowlist then
+        for _, rule in ipairs(allowlist) do
+            envoy.logDebug('allowist: compare ' .. rule .. ' and ' .. uriPath)
+            if string.find(uriPath, rule) then
+                return MATCH_WHITELIST
+            end
+        end
     end
-  end
 
-  if denylist then
-    for _, rule in ipairs(denylist) do
-      logDebug("denylist: compare "..rule.." and "..user_agent)
-      if re_find(user_agent, rule) then
-        return MATCH_BLACKLIST
-      end
+    if denylist then
+        for _, rule in ipairs(denylist) do
+            envoy.logDebug('denylist: compare ' .. rule .. ' and ' .. uriPath)
+            if string.find(uriPath, rule) then
+                return MATCH_BLACKLIST
+            end
+        end
     end
-  end
 
-  return MATCH_EMPTY
+    return NO_MATCH
 end
 
-function uaRestrictionHandler:on_request()
-  local config = envoy.get_route_config()
-  if config == nil then
-    return
-  end
+-- 定义request的header阶段处理函数
+function uriRestrictionHandler:on_request_header()
+    local uriPath = request.get_header(':path')
+    local config = envoy.get_route_config()
 
-  logDebug("Checking user-agent");
+    envoy.logInfo('start lua uriRestriction')
+    if uriPath == nil then
+        envoy.logErr('no uri path!')
+        return
+    end
 
-  local user_agent = get_user_agent()
-  if user_agent == nil then
-    return respond({[":status"] = BAD_REQUEST}, "user-agent not found")
-  end
+    -- 配置未定义报错
+    if config == nil then
+        envoy.logErr('no route config!')
+        return
+    end
 
-  local match  = examine_agent(user_agent, config.allowlist, config.denylist)
+    local match = checkUriPath(uriPath, config.allowlist, config.denylist)
 
-  if match > 1 then
-    logDebug("UA is now allowed: "..user_agent);
-    return respond({[":status"] = FORBIDDEN}, "Forbidden")
-  end
+    envoy.logDebug('on_request_header, uri path: ' .. uriPath .. ', match result: ' .. match)
+
+    if match > 1 then
+        envoy.logDebug('path is now allowed: ' .. uriPath)
+        return respond({[':status'] = FORBIDDEN}, 'Forbidden')
+    end
 end
 
-return uaRestrictionHandler
-
+return uriRestrictionHandler
 ```
 
 ### 2.2 rider 调试
@@ -141,8 +136,8 @@ return uaRestrictionHandler
           package_path: "/usr/local/lib/rider/?/init.lua;/usr/local/lib/rider/?.lua;"
         code:
           local:
-            filename: /usr/local/lib/rider/plugins/ua-restriction.lua
-        name: ua-restriction
+            filename: /usr/local/lib/rider/plugins/uri-restriction.lua
+        name: uri-restriction.lua
         config: {}
 ```
 
@@ -153,18 +148,19 @@ typed_per_filter_config:
   proxy.filters.http.rider:
     "@type": type.googleapis.com/proxy.filters.http.rider.v3alpha1.RouteFilterConfig
     plugins:
-      # Plugin config here applies to the Route
-      - name: ua-restriction
+      - name: uri-restriction
         config:
+          allowlist:
+            - a1
           denylist:
-          - bot
+            - d1
 ```
 
 执行`./scripts/dev/local-up.sh` 启动 hango-gateway和一个简单的 HTTP 服务。
 
-通过`curl -v http://localhost:8000/anything -H 'User-Agent:bot'`
+通过`curl -v http://localhost:8002/static-to-header`
 
-![image-20210416173118827](../images/rider_ok.png)
+![image-20210416173118827](../images/rider_uri_restriction_test_ok.png)
 
 response: `403 Foebidden`
 
@@ -172,14 +168,14 @@ response: `403 Foebidden`
 
 通过开发对应的插件schema，可以将插件暴露至网关控制台，便于用户进行配置。
 
-通过编写json schema，将对应的ua-restriction插件暴露在hango控制台。前端schema开发可以参考schema开发手册.md。
+通过编写json schema，将对应的uri-restriction插件暴露在hango控制台。前端schema开发可以参考schema开发手册.md。
 
-根据需求，开发ua-restriction 前端schema如下：
+根据需求，开发uri-restriction 前端schema如下：
 
 ```json
 {
   "formatter": {
-    "kind": "ua-restriction",
+    "kind": "uri-restriction",
     "type": "lua",
     "config": {
       "allowlist": "&allowlist",
@@ -190,7 +186,7 @@ response: `403 Foebidden`
     {
       "key": "allowlist",
       "alias": "白名单",
-      "help": "User-Agent优先匹配白名单，命中之后直接放行，支持正则",
+      "help": "URI优先匹配白名单，命中之后直接放行，支持正则",
       "type": "multi_input",
       "rules": [
       ]
@@ -198,7 +194,7 @@ response: `403 Foebidden`
     {
       "key": "denylist",
       "alias": "黑名单",
-      "help": "User-Agent优先匹配白名单，没有命中，继续匹配黑名单，命中之后直接禁止，支持正则",
+      "help": "URI优先匹配白名单，没有命中，继续匹配黑名单，命中之后直接禁止，支持正则",
       "type": "multi_input",
       "rules": [
       ]
@@ -233,28 +229,29 @@ hango网关自定义插件支持两种级别：全局级别和路由级别；全
 
 ```json
 {
-    "name": "ua-restriction",
-    "displayName": "UA黑白名单", 
-    "schema": "plugin/route/ua-restriction.json",
-    "description": "UA黑白名单插件",
-    "processor": "AggregateGatewayPluginProcessor",
-    "author": "system",
-    "createTime": "1572537600000",
-    "updateTime": "1572537600000",
-    "pluginScope": "global,routeRule",  
-    "instructionForUse": "UA黑白名单插件",
-    "categoryKey": "security",  
-    "categoryName": "安全"
- }
+  "name": "uri-restriction",
+  "displayName": "URI黑白名单",
+  "schema": "plugin/route/uri-restriction.json",
+  "description": "URI黑白名单插件",
+  "processor": "AggregateGatewayPluginProcessor",
+  "author": "system",
+  "createTime": "1655279630000",
+  "updateTime": "1655279630000",
+  "pluginScope": "global,routeRule",
+  "pluginPriority": "3000",
+  "instructionForUse": "URI黑白名单插件",
+  "categoryKey": "security",
+  "categoryName": "安全"
+}
 ```
 
-(3) 在/plugin/route目录下增加ua-detection.json schema文件
+(3) 在/plugin/route目录下增加uri-restriction.json schema文件
 
 ```json
----ua-restriction.json
+---uri-restriction.json
 {
   "formatter": {
-    "kind": "ua-restriction",
+    "kind": "uri-restriction",
     "type": "lua",
     "config": {
       "allowlist": "&allowlist",
@@ -265,7 +262,7 @@ hango网关自定义插件支持两种级别：全局级别和路由级别；全
     {
       "key": "allowlist",
       "alias": "白名单",
-      "help": "User-Agent优先匹配白名单，命中之后直接放行，支持正则",
+      "help": "URI优先匹配白名单，命中之后直接放行，支持正则",
       "type": "multi_input",
       "rules": [
       ]
@@ -273,7 +270,7 @@ hango网关自定义插件支持两种级别：全局级别和路由级别；全
     {
       "key": "denylist",
       "alias": "黑名单",
-      "help": "User-Agent优先匹配白名单，没有命中，继续匹配黑名单，命中之后直接禁止，支持正则",
+      "help": "URI优先匹配白名单，没有命中，继续匹配黑名单，命中之后直接禁止，支持正则",
       "type": "multi_input",
       "rules": [
       ]
