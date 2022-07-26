@@ -7,7 +7,7 @@
 通过创建服务接口，创建服务，例如，创建一个名为hango-test的服务。
 
 ```shell
-curl "http://hango.io.portal.org/gdashboard/envoy?Action=CreateService&Version=2019-09-01" \
+curl "http://hango.io.portal.org/gdashboard/envoy?Action=CreateService&Version=2018-08-09" \
 -H 'Content-Type: application/json' \
 -d '{
     "ServiceType":"http",
@@ -117,5 +117,5 @@ curl "http://hango.io.portal.org/gdashboard/envoy?Action=DeleteRouteRule&Version
 ```shell
 curl "http://hango.io.portal.org/gdashboard/envoy?Action=DeleteServiceProxy&Version=2019-09-01&ServiceId={service_id}&GwId={gw_id}"
 
-curl "http://hango.io.portal.org/gdashboard/envoy?Action=DeleteService&Version=2019-09-01&ServiceId={service_id}"
+curl "http://hango.io.portal.org/gdashboard/envoy?Action=DeleteService&Version=2018-08-09&ServiceId={service_id}"
 ```

@@ -8,7 +8,7 @@ Use hango gateway route to e2e service.
 Hango Gateway exposes hango-gateway-portal to users. You can use hango-gateway-portal api to add a service. For example, add a service which name is hango-test.
 
 ```shell
-curl "http://hango.io.portal.org/gdashboard/envoy?Action=CreateService&Version=2019-09-01" \
+curl "http://hango.io.portal.org/gdashboard/envoy?Action=CreateService&Version=2018-08-09" \
 -H 'Content-Type: application/json' \
 -d '{
     "ServiceType":"http",
@@ -118,5 +118,5 @@ You can use hango-gateway-portal api to offline or delete service. For example,
 ```shell
 curl "http://hango.io.portal.org/gdashboard/envoy?Action=DeleteServiceProxy&Version=2019-09-01&ServiceId={service_id}&GwId={gw_id}"
 
-curl "http://hango.io.portal.org/gdashboard/envoy?Action=DeleteService&Version=2019-09-01&ServiceId={service_id}"
+curl "http://hango.io.portal.org/gdashboard/envoy?Action=DeleteService&Version=2018-08-09&ServiceId={service_id}"
 ```
