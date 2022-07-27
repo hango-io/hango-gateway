@@ -2,7 +2,7 @@
 
 ## 一、Requirement
 
-Implement a UA black and white list plug-in. Support console configuration UA blacklist/whitelist.
+Implement an uri black and white list plug-in. Support console configuration uri blacklist/whitelist.
 
 ## 二、Write plug-ins and debug them
 
@@ -10,122 +10,117 @@ Implement a UA black and white list plug-in. Support console configuration UA bl
 
 Rider is an open source custom plug-in package of the hango team. It dynamically expands custom plug-ins through the combination of rider and envoy's hot-loading capabilities.
 
-（1）2.1.1 Set up the plugins/ua-restriction.lua file under the Rider root to store the plug-in code
+（1）2.1.1 Set up the plugins/uri-restriction.lua file under the Rider root to store the plug-in code
 
-Create plugins/ua-restriction.lua and add the following code.
+Create plugins/uri-restriction.lua and add the following code.
 
 It consists of two parts: plug-in schema configuration and plug-in execution logic configuration; Schema configuration can be divided into base_json_schema global configuration and route_json_schema routing configuration. Global configuration is used to configure the common configuration of the plug-in, such as the global configuration of external authentication services; Routing configuration is the core configuration of the plug-in, and most scenarios only need to write route_json_schema.
 
-The plug-in executes logic and relies on the SDK encapsulated by Rider to develop the corresponding plug-in link. If no User-Agent header exists, then 400 is returned. "User-Agent not found". If no User-Agent header exists, then 400 is returned. Return 403 "Forbidden" if match uA blacklist.
+The plug-in executes logic and relies on the SDK encapsulated by Rider to develop the corresponding plug-in link. If the characters in the request URI match the black-and-white list rule, the request is allowed. If the characters in the request URI do not match the black-and-white list rule and match the black-and-white list rule, the 403 error code and the corresponding "Forbidden" is returned
 
 ```lua
-require("rider")
+--[[
+V2 Rider version was introduced;
+Compared with V1, v2 divides request and response into header and body parts to improve plugin performance in different scenarios
+-- ]] 
+require('rider.v2')
+
+-- Defining local variables
 local envoy = envoy
-local get_req_header = envoy.req.get_header
-local ipairs = ipairs
-local re_find = string.find
+local request = envoy.req
 local respond = envoy.respond
-local logDebug = envoy.logDebug
 
-local uaRestrictionHandler = {}
-
+-- Define local constants
+local NO_MATCH = 0
+local MATCH_WHITELIST = 1
+local MATCH_BLACKLIST = 2
 local BAD_REQUEST = 400
 local FORBIDDEN = 403
 
-local MATCH_EMPTY     = 0
-local MATCH_WHITELIST = 1
-local MATCH_BLACKLIST = 2
+local uriRestrictionHandler = {}
 
-local json_validator = require("rider.json_validator")
+uriRestrictionHandler.version = 'v2'
 
+local json_validator = require('rider.json_validator')
+
+-- Define the global configuration
 local base_json_schema = {
     type = 'object',
-    properties = {},
+    properties = {}
 }
 
+-- Define the route configuration
 local route_json_schema = {
     type = 'object',
     properties = {
-      allowlist = {
-        type = 'array',
-        items = {
-          type = 'string',
+        allowlist = {
+            type = 'array',
+            items = {
+                type = 'string'
+            }
         },
-      },
-      denylist = {
-        type = 'array',
-        items = {
-          type = 'string',
-        },
-      },
-    },
+        denylist = {
+            type = 'array',
+            items = {
+                type = 'string'
+            }
+        }
+    }
 }
+
 json_validator.register_validator(base_json_schema, route_json_schema)
 
---- strips whitespace from a string.
-local function strip(str)
-  if str == nil then
-    return ""
-  end
-  str = tostring(str)
-  if #str > 200 then
-    return str:gsub("^%s+", ""):reverse():gsub("^%s+", ""):reverse()
-  else
-    return str:match("^%s*(.-)%s*$")
-  end
-end
-
-local function get_user_agent()
-  return get_req_header("user-agent")
-end
-
-local function examine_agent(user_agent, allowlist, denylist)
-  user_agent = strip(user_agent)
-
-  if allowlist then
-    for _, rule in ipairs(allowlist) do
-      logDebug("allowist: compare "..rule.." and "..user_agent)
-      if re_find(user_agent, rule) then
-        return MATCH_WHITELIST
-      end
+-- Define the local validation URI white-and-black list method
+local function checkUriPath(uriPath, allowlist, denylist)
+    if allowlist then
+        for _, rule in ipairs(allowlist) do
+            envoy.logDebug('allowist: compare ' .. rule .. ' and ' .. uriPath)
+            if string.find(uriPath, rule) then
+                return MATCH_WHITELIST
+            end
+        end
     end
-  end
 
-  if denylist then
-    for _, rule in ipairs(denylist) do
-      logDebug("denylist: compare "..rule.." and "..user_agent)
-      if re_find(user_agent, rule) then
-        return MATCH_BLACKLIST
-      end
+    if denylist then
+        for _, rule in ipairs(denylist) do
+            envoy.logDebug('denylist: compare ' .. rule .. ' and ' .. uriPath)
+            if string.find(uriPath, rule) then
+                return MATCH_BLACKLIST
+            end
+        end
     end
-  end
 
-  return MATCH_EMPTY
+    return NO_MATCH
 end
 
-function uaRestrictionHandler:on_request()
-  local config = envoy.get_route_config()
-  if config == nil then
-    return
-  end
+-- Define the header stage handler for the request
+function uriRestrictionHandler:on_request_header()
+    local uriPath = request.get_header(':path')
+    local config = envoy.get_route_config()
 
-  logDebug("Checking user-agent");
+    envoy.logInfo('start lua uriRestriction')
+    if uriPath == nil then
+        envoy.logErr('no uri path!')
+        return
+    end
 
-  local user_agent = get_user_agent()
-  if user_agent == nil then
-    return respond({[":status"] = BAD_REQUEST}, "user-agent not found")
-  end
+    -- 配置未定义报错
+    if config == nil then
+        envoy.logErr('no route config!')
+        return
+    end
 
-  local match  = examine_agent(user_agent, config.allowlist, config.denylist)
+    local match = checkUriPath(uriPath, config.allowlist, config.denylist)
 
-  if match > 1 then
-    logDebug("UA is now allowed: "..user_agent);
-    return respond({[":status"] = FORBIDDEN}, "Forbidden")
-  end
+    envoy.logDebug('on_request_header, uri path: ' .. uriPath .. ', match result: ' .. match)
+
+    if match > 1 then
+        envoy.logDebug('path is now allowed: ' .. uriPath)
+        return respond({[':status'] = FORBIDDEN}, 'Forbidden')
+    end
 end
 
-return uaRestrictionHandler
-
+return uriRestrictionHandler
 ```
 
 ### 2.2 The debugging of rider
@@ -141,8 +136,8 @@ Update the script/dev/envoy.yaml file to add the corresponding http_filter confi
           package_path: "/usr/local/lib/rider/?/init.lua;/usr/local/lib/rider/?.lua;"
         code:
           local:
-            filename: /usr/local/lib/rider/plugins/ua-restriction.lua
-        name: ua-restriction
+            filename: /usr/local/lib/rider/plugins/uri-restriction.lua
+        name: uri-restriction.lua
         config: {}
 ```
 
@@ -153,18 +148,19 @@ typed_per_filter_config:
   proxy.filters.http.rider:
     "@type": type.googleapis.com/proxy.filters.http.rider.v3alpha1.RouteFilterConfig
     plugins:
-      # Plugin config here applies to the Route
-      - name: ua-restriction
+      - name: uri-restriction
         config:
+          allowlist:
+            - a1
           denylist:
-          - bot
+            - d1
 ```
 
 Execute './scripts/dev/local-up.sh 'to start hango-gateway and a simple HTTP service.
 
-`curl -v http://localhost:8000/anything -H 'User-Agent:bot'`
+`curl -v http://localhost:8002/static-to-header`
 
-![image-20210416173118827](../images/rider_ok.png)
+![image-20210416173118827](../images/rider_uri_restriction_test_ok.png)
 
 response: `403 Foebidden`
 
@@ -172,14 +168,14 @@ response: `403 Foebidden`
 
 Developing the corresponding plug-in schema, the plug-in can be exposed to the gateway console for easy user configuration.
 
-Expose the corresponding UA-restriction plug-in to the Hango console by writing a JSON schema.
+Expose the corresponding uri-restriction plug-in to the Hango console by writing a JSON schema.
 
-According to the requirements, the development of UA-restriction front-end schema is as follows;
+According to the requirements, the development of uri-restriction front-end schema is as follows;
 
 ```json
 {
   "formatter": {
-    "kind": "ua-restriction",
+    "kind": "uri-restriction",
     "type": "lua",
     "config": {
       "allowlist": "&allowlist",
@@ -190,7 +186,7 @@ According to the requirements, the development of UA-restriction front-end schem
     {
       "key": "allowlist",
       "alias": "白名单",
-      "help": "User-Agent matches the whitelist first, and releases it directly after hitting",
+      "help": "URI优先匹配白名单，命中之后直接放行，支持正则",
       "type": "multi_input",
       "rules": [
       ]
@@ -198,7 +194,7 @@ According to the requirements, the development of UA-restriction front-end schem
     {
       "key": "denylist",
       "alias": "黑名单",
-      "help": "User-Agent matches the whitelist first, if it fails to hit, it will continue to match the blacklist, and if hit, it will be banned directly",
+      "help": "URI优先匹配白名单，没有命中，继续匹配黑名单，命中之后直接禁止，支持正则",
       "type": "multi_input",
       "rules": [
       ]
@@ -233,27 +229,29 @@ The routing level configuration entry is: [Released information] -> [Released ro
 
 ```json
 {
-    "name": "ua-restriction",
-    "displayName": "UA黑白名单", 
-    "schema": "plugin/route/ua-restriction.json",
-    "description": "UA黑白名单插件",
-    "processor": "AggregateGatewayPluginProcessor",
-    "author": "system",
-    "createTime": "1572537600000",
-    "updateTime": "1572537600000",
-    "pluginScope": "global,routeRule",   
-    "instructionForUse": "UA黑白名单插件",
-    "categoryKey": "security",  
-    "categoryName": "安全"
+  "name": "uri-restriction",
+  "displayName": "URI黑白名单",
+  "schema": "plugin/route/uri-restriction.json",
+  "description": "URI黑白名单插件",
+  "processor": "AggregateGatewayPluginProcessor",
+  "author": "system",
+  "createTime": "1655279630000",
+  "updateTime": "1655279630000",
+  "pluginScope": "global,routeRule",
+  "pluginPriority": "3000",
+  "instructionForUse": "URI黑白名单插件",
+  "categoryKey": "security",
+  "categoryName": "安全"
+}
 ```
 
-(3) Add the ua-detection.json schema file in the /plugin/route directory
+(3) Add the uri-restriction.json schema file in the /plugin/route directory
 
 ```json
----ua-restriction.json
+---uri-restriction.json
 {
   "formatter": {
-    "kind": "ua-restriction",
+    "kind": "uri-restriction",
     "type": "lua",
     "config": {
       "allowlist": "&allowlist",
@@ -264,7 +262,7 @@ The routing level configuration entry is: [Released information] -> [Released ro
     {
       "key": "allowlist",
       "alias": "白名单",
-      "help": "User-Agent matches the whitelist first, and releases directly after the hit, and supports regular",
+      "help": "URI优先匹配白名单，命中之后直接放行，支持正则",
       "type": "multi_input",
       "rules": [
       ]
@@ -272,7 +270,7 @@ The routing level configuration entry is: [Released information] -> [Released ro
     {
       "key": "denylist",
       "alias": "黑名单",
-      "help": "User-Agent matches the whitelist first, if no hits, continue to match the blacklist, directly banned after hits, support regular",
+      "help": "URI优先匹配白名单，没有命中，继续匹配黑名单，命中之后直接禁止，支持正则",
       "type": "multi_input",
       "rules": [
       ]
