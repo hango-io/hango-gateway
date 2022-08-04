@@ -97,8 +97,12 @@ function init_hango(){
         "GwClusterName":"demo-istio",
         "GwAddr":"http://'"$HANGO_PROXY"'",
         "GwType":"envoy",
-        "HostList": [
-            "istio.com"
+        "VirtualHostList": [
+            {
+              "ProjectId":1,
+              "HostList": ["istio.com"],
+              "BindType":"host"
+            }
         ]
     }')
     if [[ $result -eq 200 ]]; then

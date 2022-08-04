@@ -28,7 +28,7 @@ spec:
     port: 80
   - enable: true
     name: envoy.filters.http.fault
-  - enable: true
+  - enable: false
     listenerType: Gateway
     name: proxy.filters.http.detailed_stats
     port: 80
@@ -47,7 +47,7 @@ spec:
     listenerType: Gateway
     name: proxy.filters.http.staticdowngrade
     port: 80
-  - enable: true
+  - enable: false
     name: proxy.filters.http.rider
     inline:
       settings:
