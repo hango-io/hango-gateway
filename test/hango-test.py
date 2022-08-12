@@ -115,6 +115,25 @@ def publish_route(route_id, service_id, gw_id):
         print('error info: ' + r.text)
 
 
+def describe_plugin_id(route_id, gw_id, plugin_type):
+    url = "http://" + const.PORTAL + \
+        "/gdashboard/envoy?Action=DescribeBindingPlugins&Version=2019-09-01"
+    PARAMS = {'BindingObjectId': route_id, 'GwId': gw_id, 'BindingObjectType':'routeRule'} 
+    r = requests.get(url, params=PARAMS)
+    if(200 == r.status_code):
+        pls = json.loads(r.text)["PluginBindingList"]
+        for pl in pls:
+            if pl.get("PluginType") == plugin_type:
+                return pl.get("PluginBindingInfoId")
+
+def offline_plugin(plugin_binding_id, plugin_type):
+    url = "http://" + const.PORTAL + \
+        "/gdashboard/envoy?Action=UnbindingPlugin&Version=2019-09-01"
+    PARAMS = {'PluginBindingInfoId': plugin_binding_id}
+    r = requests.get(url, params=PARAMS)
+    if(200 == r.status_code):
+        print("offline plugin " + plugin_type +" ok")
+
 def offline_route(route_id, gw_id):
     url = "http://" + const.PORTAL + \
         "/gdashboard/envoy?Action=DeletePublishedRouteRule&Version=2019-09-01"
@@ -189,6 +208,15 @@ def invoke_gw(add_headers=None):
     r = requests.get(url, headers=HEADERS)
     return r.status_code
 
+def invoke_gw_return_h(add_headers=None):
+    url = "http://" + const.GW + "/hango/unit"
+    HEADERS = {'host': 'istio.com'}
+    if add_headers is not None:
+        HEADERS = HEADERS.copy()
+        HEADERS.update(add_headers)
+    r = requests.get(url, headers=HEADERS)
+    return r.headers
+
 
 gw_id = get_gw()
 
@@ -219,13 +247,36 @@ for i in range(50):
         print("invode_gw local-limit plugin ok---------------local-limit")
         break
 
+# offline locallimit
+offline_plugin(describe_plugin_id(route_id, gw_id, "local-limiting"), "local-limiting")
+time.sleep(2)
+
 # UA黑白名单，ua-restriction
-ua_restriction = "{\"kind\":\"ua-restriction\",\"type\":\"lua\",\"config\":{\"allowlist\":[],\"denylist\":[\"bot\"]}}"
+ua_restriction = "{\"type\": \"0\",\"list\": [{\"match_type\": \"exact_match\",\"value\": [\"bot\"]}],\"kind\": \"ua-restriction\"}"
 bind_plugin(route_id, gw_id, "ua-restriction", ua_restriction)
 time.sleep(2)
 ua_local = {'User-Agent': 'bot'}
 if(403 == invoke_gw(ua_local)):
     print("invode_gw ua-restriction plugin ok---------------ua-restriction")
+
+# Header黑白名单，header-restriction
+header_restriction = "{\"type\":\"0\",\"list\":[{\"header\":\"header_test\",\"match_type\":\"exact_match\",\"value\":[\"black\"]}],\"kind\":\"header-restriction\"}"
+bind_plugin(route_id, gw_id, "header-restriction", header_restriction)
+time.sleep(2)
+header_local = {'header_test': 'black'}
+if(403 == invoke_gw(header_local)):
+    print("invode_gw header-restriction plugin ok---------------header-restriction")
+
+
+# 本地缓存插件， local-cache
+local_cache = "{\"condition\":{\"request\":{\"requestSwitch\":false},\"response\":{\"responseSwitch\":true,\"code\":{\"match_type\":\"exact_match\",\"value\":\"200\"},\"headers\":[]}},\"ttl\":{\"local\":{\"default\":\"30000\",\"custom\":[]}},\"kind\":\"local-cache\",\"keyMaker\":{\"excludeHost\":false,\"ignoreCase\":true,\"queryString\":[],\"headers\":[]}}"
+bind_plugin(route_id, gw_id, "local-cache", local_cache)
+time.sleep(2)
+for i in range(50):
+    r_headers = invoke_gw_return_h()
+    if "HIT" == r_headers.get("x-cache-status"):
+        print("invode_gw local-cache plugin ok---------------local-cache")
+        break
 
 offline_route(route_id, gw_id)
 offline_service(service_id, gw_id)

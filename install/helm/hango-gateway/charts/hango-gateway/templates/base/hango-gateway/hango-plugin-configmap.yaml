@@ -302,6 +302,759 @@ data:
         }
       ]
     }
+  local-cache.json: |-
+    {
+      "formatter": {
+        "kind": "local-cache",
+        "condition?": "&condition",
+        "ttl?": "&ttl",
+        "keyMaker?": "&keyMaker"
+      },
+      "layouts": [
+        {
+          "key": "kind",
+          "default": "local-cache",
+          "visible": false
+        },
+        {
+          "key": "condition",
+          "alias": "缓存条件",
+          "type": "layouts",
+          "layouts": [
+            {
+              "key": "request",
+              "alias": "请求",
+              "type": "layouts",
+              "layouts": [
+                {
+                  "key": "requestSwitch",
+                  "alias": "请求匹配",
+                  "type": "switch",
+                  "default": false
+                },
+                {
+                  "key": "method",
+                  "alias": "请求方法",
+                  "type": "multi_select",
+                  "visible": {
+                    "this.requestSwitch": true
+                  },
+                  "options": [
+                    {
+                      "text": "GET",
+                      "value": "GET"
+                    },
+                    {
+                      "text": "HEAD",
+                      "value": "HEAD"
+                    }
+                  ]
+                },
+                {
+                  "key": "path",
+                  "alias": "请求路径",
+                  "type": "layouts",
+                  "visible": {
+                    "this.requestSwitch": true
+                  },
+                  "layouts": [
+                    {
+                      "key": "match_type",
+                      "alias": "匹配方式",
+                      "type": "select",
+                      "default": "exact_match",
+                      "options": [
+                        {
+                          "text": "精确匹配",
+                          "value": "exact_match"
+                        },
+                        {
+                          "text": "正则表达式",
+                          "value": "safe_regex_match"
+                        }
+                      ]
+                    },
+                    {
+                      "key": "value",
+                      "type": "input",
+                      "alias": "取值"
+                    }
+                  ]
+                },
+                {
+                  "key": "host",
+                  "alias": "域名",
+                  "type": "layouts",
+                  "visible": {
+                    "this.requestSwitch": true
+                  },
+                  "layouts": [
+                    {
+                      "key": "match_type",
+                      "alias": "匹配方式",
+                      "type": "select",
+                      "default": "exact_match",
+                      "options": [
+                        {
+                          "text": "精确匹配",
+                          "value": "exact_match"
+                        },
+                        {
+                          "text": "正则表达式",
+                          "value": "safe_regex_match"
+                        }
+                      ]
+                    },
+                    {
+                      "key": "value",
+                      "type": "input",
+                      "alias": "取值"
+                    }
+                  ]
+                },
+                {
+                  "key": "headers",
+                  "alias": "请求头",
+                  "type": "array",
+                  "visible": {
+                    "this.requestSwitch": true
+                  },
+                  "layouts": [
+                    {
+                      "key": "headerKey",
+                      "alias": "请求头名称",
+                      "type": "input"
+                    },
+                    {
+                      "key": "match_type",
+                      "alias": "匹配方式",
+                      "type": "select",
+                      "default": "exact_match",
+                      "options": [
+                        {
+                          "text": "精确匹配",
+                          "value": "exact_match"
+                        },
+                        {
+                          "text": "正则表达式",
+                          "value": "safe_regex_match"
+                        },
+                        {
+                          "text": "参数存在则匹配",
+                          "value": "present_match"
+                        },
+                        {
+                          "text": "参数不存在则匹配",
+                          "value": "present_match_invert"
+                        }
+                      ]
+                    },
+                    {
+                      "key": "value",
+                      "type": "input",
+                      "alias": "取值",
+                      "invisible": {
+                        "present_match": ["this", "match_type"],
+                        "present_match_invert": ["this", "match_type"]
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "key": "response",
+              "alias": "响应",
+              "type": "layouts",
+              "layouts": [
+                {
+                  "key": "responseSwitch",
+                  "alias": "响应匹配",
+                  "type": "switch",
+                  "default": true
+                },
+                {
+                  "key": "code",
+                  "alias": "状态码",
+                  "type": "layouts",
+                  "visible": {
+                    "this.responseSwitch": true
+                  },
+                  "layouts": [
+                    {
+                      "key": "match_type",
+                      "alias": "匹配方式",
+                      "type": "select",
+                      "default": "exact_match",
+                      "options": [
+                        {
+                          "text": "精确匹配",
+                          "value": "exact_match"
+                        },
+                        {
+                          "text": "正则表达式",
+                          "value": "safe_regex_match"
+                        }
+                      ]
+                    },
+                    {
+                      "key": "value",
+                      "alias": "取值",
+                      "type": "input",
+                      "rules": [
+                        "Required"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "key": "headers",
+                  "alias": "响应头",
+                  "type": "array",
+                  "visible": {
+                    "this.responseSwitch": true
+                  },
+                  "layouts": [
+                    {
+                      "key": "headerKey",
+                      "alias": "响应头名称",
+                      "type": "input"
+                    },
+                    {
+                      "key": "match_type",
+                      "alias": "匹配方式",
+                      "type": "select",
+                      "default": "exact_match",
+                      "options": [
+                        {
+                          "text": "精确匹配",
+                          "value": "exact_match"
+                        },
+                        {
+                          "text": "正则表达式",
+                          "value": "safe_regex_match"
+                        },
+                        {
+                          "text": "参数存在则匹配",
+                          "value": "present_match"
+                        },
+                        {
+                          "text": "参数不存在则匹配",
+                          "value": "present_match_invert"
+                        }
+                      ]
+                    },
+                    {
+                      "key": "value",
+                      "type": "input",
+                      "alias": "取值",
+                      "invisible": {
+                        "present_match": ["this", "match_type"],
+                        "present_match_invert": ["this", "match_type"]
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "ttl",
+          "alias": "缓存TTL",
+          "type": "layouts",
+          "layouts": [
+            {
+              "key": "local",
+              "alias": "本地缓存TTL",
+              "type": "layouts",
+              "layouts": [
+                {
+                  "key": "default",
+                  "alias": "默认TTL",
+                  "help": "默认TTL设置，填写0即不使用缓存，单位ms",
+                  "type": "input",
+                  "rules": [
+                    "Required",
+                    "Number",
+                    "MinNumber(0)",
+                    "MaxNumber(99999999)"
+                  ]
+                },
+                {
+                  "key": "custom",
+                  "alias": "定制TTL",
+                  "help": "当响应状态码满足如下条件时则使用单独的缓存TTL设置，否则使用默认TTL设置",
+                  "type": "array",
+                  "layouts": [
+                    {
+                      "key": "code",
+                      "alias": "响应状态码",
+                      "help": "支持输入具体的响应码及X..，如2..代表2XX响应码",
+                      "type": "input",
+                      "rules": [
+                        "Required"
+                      ]
+                    },
+                    {
+                      "key": "value",
+                      "alias": "TTL",
+                      "type": "input",
+                      "rules": [
+                        "Required",
+                        "Number",
+                        "MinNumber(0)",
+                        "MaxNumber(99999999)"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "keyMaker",
+          "alias": "缓存key配置",
+          "help": "默认情况下使用method + host + path（不带querystring参数）作为缓存的key",
+          "type": "layouts",
+          "layouts": [
+            {
+              "key": "excludeHost",
+              "alias": "忽略host",
+              "type": "switch",
+              "help": "Host不参与key计算",
+              "default": false
+            },
+            {
+              "key": "ignoreCase",
+              "alias": "忽略大小写",
+              "type": "switch",
+              "help": "Key忽略大小写",
+              "default": true
+            },
+            {
+              "key": "queryString",
+              "alias": "自定义查询参数",
+              "help": "自定义查询参数参与key计算",
+              "type": "multi_input"
+            },
+            {
+              "key": "headers",
+              "alias": "自定义请求头",
+              "type": "multi_input",
+              "help": "自定义请求头参与key计算"
+            }
+          ]
+        }
+      ]
+    }
+  header-restriction.json: |-
+    {
+      "inject": {
+        "kind": "header-restriction"
+      },
+      "layouts": [
+        {
+          "key": "type",
+          "alias": "类型",
+          "type": "select",
+          "options": [
+            {
+              "text": "黑名单",
+              "value": "0"
+            },
+            {
+              "text": "白名单",
+              "value": "1"
+            }
+          ],
+          "rules": [
+            "Required",
+            "Number"
+          ]
+        },
+        {
+          "key": "list",
+          "alias": "过滤列表",
+          "type": "array",
+          "layouts": [
+            {
+              "key": "header",
+              "alias": "header名称",
+              "type": "input",
+              "rules": [
+                "MaxLength(200)",
+                "Required"
+              ]
+            },
+            {
+              "key": "match_type",
+              "alias": "匹配方式",
+              "type": "select",
+              "default": "exact_match",
+              "options": [
+                {
+                  "text": "精确匹配",
+                  "value": "exact_match"
+                },
+                {
+                  "text": "前缀匹配",
+                  "value": "prefix_match"
+                },
+                {
+                  "text": "正则表达式",
+                  "value": "safe_regex_match"
+                }
+              ]
+            },
+            {
+              "key": "value",
+              "type": "multi_input",
+              "alias": "取值",
+              "invisible": {
+                "present_match": ["this", "match_type"],
+                "present_match_invert": ["this", "match_type"]
+              },
+              "rules": [
+                "MaxLength(200)",
+                "Required"
+              ]
+            }
+          ],
+          "rules": [
+            "MaxLength(200)",
+            "Required"
+          ]
+        }
+      ]
+    }
+  referer-restriction.json: |-
+    {
+      "inject": {
+        "kind": "referer-restriction"
+      },
+      "layouts": [
+        {
+          "key": "type",
+          "alias": "黑白名单类型",
+          "type": "select",
+          "options": [
+            {
+              "text": "黑名单",
+              "value": "0"
+            },
+            {
+              "text": "白名单",
+              "value": "1"
+            }
+          ],
+          "rules": [
+            "Required",
+            "Number"
+          ]
+        },
+        {
+          "key": "list",
+          "alias": "过滤列表",
+          "type": "array",
+          "layouts": [
+            {
+              "key": "match_type",
+              "alias": "匹配方式",
+              "type": "select",
+              "default": "exact_match",
+              "options": [
+                {
+                  "text": "精确匹配",
+                  "value": "exact_match"
+                },
+                {
+                  "text": "前缀匹配",
+                  "value": "prefix_match"
+                },
+                {
+                  "text": "正则表达式",
+                  "value": "safe_regex_match"
+                }
+              ]
+            },
+            {
+              "key": "value",
+              "type": "multi_input",
+              "alias": "取值",
+              "invisible": {
+                "present_match": ["this", "match_type"],
+                "present_match_invert": ["this", "match_type"]
+              },
+              "rules": [
+                "MaxLength(200)",
+                "Required"
+              ]
+            }
+
+          ],
+          "rules": [
+            "MaxLength(200)",
+            "Required"
+          ]
+        }
+      ]
+    }
+  response-header-rewrite.json: |-
+    {
+      "inject": {
+        "kind": "response-header-rewrite"
+      },
+      "layouts": [
+        {
+          "key": "headerKey",
+          "alias": "修改规则",
+          "type": "array",
+          "layouts": [
+            {
+              "key": "headerKey",
+              "alias": "Header名称",
+              "type": "input",
+              "help": "在响应中header字段的key值",
+              "rules": [
+                "MaxLength(200)",
+                "Required"
+              ]
+            },
+            {
+              "key": "operation",
+              "alias": "修改类型",
+              "type": "select",
+              "default": "create",
+              "options": [
+                {
+                  "text": "创建或追加（若不存在则创建，存在则追加）",
+                  "value": "create"
+                },
+                {
+                  "text": "更新（如果不存在则不操作）",
+                  "value": "update"
+                },
+                {
+                  "text": "删除",
+                  "value": "delete"
+                }
+              ],
+              "rules": [
+                "Required",
+                "MaxNumber(3)",
+                "MinNumber(0)"
+              ]
+            },
+            {
+              "key": "headerValue",
+              "alias": "取值",
+              "type": "input",
+              "help": "在响应中header字段的value值",
+              "invisible": {
+                "this.operation": "delete"
+              },
+              "rules": [
+                "Required"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  circuit-breaker.json: |-
+    {
+      "formatter": {
+        "kind": "circuit-breaker",
+        "config": {
+          "error_percent_threshold": "&errorPercent.errorPercentThreshold",
+          "min_request_amount": "&errorPercent.minRequestAmount",
+          "average_response_time": "&rt.rtThreshold",
+          "consecutive_slow_requests": "&rt.consecutiveSlowRequests",
+          "breakType": "&breakType",
+          "lookback_duration": "&lookbackDuration",
+          "break_duration": "&breakDuration"
+        },
+        "response": {
+          "code": "&response.code",
+          "headers": "&response.headers",
+          "body": "&response.body"
+        }
+      },
+      "layouts": [
+        {
+          "key": "breakType",
+          "alias": "熔断触发条件",
+          "type": "checkbox",
+          "options": [
+            {
+              "text": "错误率触发熔断",
+              "value": "ErrorPercentCircuitbreaker"
+            },
+            {
+              "text": "RT触发熔断",
+              "value": "RTCircuitbreaker"
+            }
+          ],
+          "rules": [
+            "Required"
+          ],
+          "default": []
+        },
+        {
+          "key": "errorPercent",
+          "alias": "错误率触发熔断",
+          "help": "错误定义：服务响应5xx，网关代理请求到服务过程中超时等异常均会计入5xx统计",
+          "type": "layouts",
+          "visible": {
+            "RTCircuitbreaker,ErrorPercentCircuitbreaker": ["this", "breakType"],
+            "ErrorPercentCircuitbreaker,RTCircuitbreaker": ["this", "breakType"],
+            "ErrorPercentCircuitbreaker": ["this", "breakType"]
+          },
+          "layouts": [
+            {
+              "key": "errorPercentThreshold",
+              "alias": "错误百分比阈值",
+              "help": "与最小请求次数搭配生效，仅在统计窗口内，最小请求次数与错误百分比阈值同时满足时触发熔断",
+              "type": "input",
+              "placeholder": "范围 (0.0, 100.0] 之间",
+              "rules": [
+                "Required",
+                "FloatNumber(5)",
+                "MaxFloatNumber(100.0)",
+                "MinFloatNumber(0.00001)"
+              ]
+            },
+            {
+              "key": "minRequestAmount",
+              "alias": "最小请求次数",
+              "help": "与错误百分比阈值搭配生效，仅在统计窗口内，最小请求次数与错误百分比阈值同时满足时触发熔断",
+              "type": "input",
+              "placeholder": "范围 [1, 4294967295] 之间",
+              "rules": [
+                "Required",
+                "Number",
+                "MinNumber(1)",
+                "MaxNumber(4294967295)"
+              ]
+            }
+          ]
+        },
+        {
+          "key": "rt",
+          "alias": "RT触发熔断",
+          "type": "layouts",
+          "visible": {
+            "RTCircuitbreaker,ErrorPercentCircuitbreaker": ["this", "breakType"],
+            "ErrorPercentCircuitbreaker,RTCircuitbreaker": ["this", "breakType"],
+            "RTCircuitbreaker": ["this", "breakType"]
+          },
+          "layouts": [
+            {
+              "key": "rtThreshold",
+              "alias": "慢响应时间阈值",
+              "help": "慢响应时间阈值，与连续慢响应次数搭配生效，当连续",
+              "placeholder": "单位s，范围 (0, 1000.0]",
+              "type": "input",
+              "rules": [
+                "Required",
+                "FloatNumber(5)",
+                "MaxFloatNumber(1000.0)",
+                "MinFloatNumber(0.00001)"
+              ]
+            },
+            {
+              "key": "consecutiveSlowRequests",
+              "alias": "连续慢响应次数",
+              "help": "与响应时间阈值，范围 [1, 4294967295] 之间，与慢响应时间阈值搭配生效，当连续有",
+              "type": "input",
+              "rules": [
+                "Required",
+                "Number",
+                "MinNumber(1)",
+                "MaxNumber(4294967295)"
+              ]
+            }
+          ]
+        },
+        {
+          "key": "lookbackDuration",
+          "alias": "统计窗口",
+          "help": "统计窗口，单位s，默认10s，最大值为120s",
+          "type": "input",
+          "placeholder": "单位s，范围(0.0,120.0)",
+          "rules": [
+            "Required",
+            "FloatNumber(5)",
+            "MaxFloatNumber(119.999)",
+            "MinFloatNumber(0.00001)"
+          ]
+        },
+        {
+          "key": "breakDuration",
+          "alias": "惩罚时间",
+          "help": "当触发熔断时的惩罚时间，单位s，在该时间内不再请求后端服务而之间返回熔断后的定制响应",
+          "type": "input",
+          "placeholder": "单位s，范围 (0.0, 10000]",
+          "rules": [
+            "Required",
+            "FloatNumber(5)",
+            "MaxFloatNumber(10000.0)",
+            "MinFloatNumber(0.00001)"
+          ]
+        },
+        {
+          "key": "response",
+          "alias": "定制响应",
+          "help": "当触发熔断后，会返回此部分定制的响应",
+          "type": "layouts",
+          "layouts": [
+            {
+              "key": "code",
+              "type": "input",
+              "alias": "响应状态码",
+              "placeholder": "请输入 [200, 599] 之间的响应状态码",
+              "rules": [
+                "Required",
+                "Number",
+                "MinNumber(200)",
+                "MaxNumber(599)"
+              ]
+            },
+            {
+              "key": "headers",
+              "type": "array",
+              "alias": "响应头",
+              "layouts": [
+                {
+                  "key": "key",
+                  "type": "input",
+                  "alias": "响应头名称",
+                  "rules": [
+                    "Required"
+                  ]
+                },
+                {
+                  "key": "value",
+                  "type": "input",
+                  "alias": "响应头值",
+                  "rules": [
+                    "Required"
+                  ]
+                }
+              ]
+            },
+            {
+              "key": "body",
+              "type": "input",
+              "alias": "响应内容",
+              "help": "若不填写，则默认返回：circuit breaker filter abort"
+            }
+          ]
+        }
+      ]
+    }
   plugin-config.json: |-
     {
       "item": [
@@ -351,6 +1104,21 @@ data:
           "categoryName": "流量管理"
         },
         {
+          "name": "local-cache",
+          "displayName": "本地缓存",
+          "schema": "plugin/route/local-cache.json",
+          "description": "",
+          "processor": "AggregateGatewayPluginProcessor",
+          "author": "system",
+          "createTime": "1572537600000",
+          "updateTime": "1572537600000",
+          "pluginScope": "routeRule,global",
+          "pluginPriority": "3000",
+          "instructionForUse": "本地缓存后端应答，以缓存响应请求",
+          "categoryKey": "trafficPolicy",
+          "categoryName": "流量管理"
+        },
+        {
           "name": "local-limiting",
           "displayName": "本地限流",
           "schema": "plugin/route/local-limit.json",
@@ -378,6 +1146,66 @@ data:
           "instructionForUse": "UA黑白名单插件",
           "categoryKey": "security",
           "categoryName": "安全"
+        },
+        {
+          "name": "header-restriction",
+          "displayName": "Header黑白名单",
+          "schema": "plugin/route/header-restriction.json",
+          "description": "根据header过滤请求",
+          "processor": "AggregateGatewayPluginProcessor",
+          "author": "system",
+          "createTime": "1572537600000",
+          "updateTime": "1572537600000",
+          "pluginScope": "routeRule,global",
+          "pluginPriority": "1100",
+          "instructionForUse": "header字段进行过滤",
+          "categoryKey": "security",
+          "categoryName": "安全"
+        },
+        {
+          "name": "referer-restriction",
+          "displayName": "Referer黑白名单",
+          "schema": "plugin/route/referer-restriction.json",
+          "description": "Referer黑白名单插件",
+          "processor": "AggregateGatewayPluginProcessor",
+          "author": "system",
+          "createTime": "1572537600000",
+          "updateTime": "1572537600000",
+          "pluginScope": "routeRule,global",
+          "pluginPriority": "1100",
+          "instructionForUse": "根据referer过滤请求",
+          "categoryKey": "security",
+          "categoryName": "安全"
+        },
+        {
+          "name": "response-header-rewrite",
+          "displayName": "响应头部重写",
+          "schema": "plugin/route/response-header-rewrite.json",
+          "description": "",
+          "processor": "AggregateGatewayPluginProcessor",
+          "author": "system",
+          "createTime": "1636943353954",
+          "updateTime": "1636943353954",
+          "pluginScope": "routeRule,global",
+          "pluginPriority": "2500",
+          "instructionForUse": "修改请求响应头信息",
+          "categoryKey": "dataFormat",
+          "categoryName": "数据转换"
+        },
+        {
+          "name": "circuit-breaker",
+          "displayName": "熔断",
+          "schema": "plugin/route/circuit-breaker.json",
+          "description": "",
+          "processor": "AggregateGatewayPluginProcessor",
+          "author": "system",
+          "createTime": "1572537600000",
+          "updateTime": "1572537600000",
+          "pluginScope": "routeRule,global",
+          "pluginPriority": "3400",
+          "instructionForUse": "提供错误率和时延触发的熔断",
+          "categoryKey": "trafficPolicy",
+          "categoryName": "流量管理"
         }
       ]
     }
