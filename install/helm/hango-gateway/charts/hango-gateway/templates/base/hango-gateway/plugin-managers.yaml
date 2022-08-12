@@ -28,7 +28,7 @@ spec:
     port: 80
   - enable: true
     name: envoy.filters.http.fault
-  - enable: false
+  - enable: true
     listenerType: Gateway
     name: proxy.filters.http.detailed_stats
     port: 80
@@ -45,8 +45,37 @@ spec:
     port: 80
   - enable: true
     listenerType: Gateway
+    name: proxy.filters.http.ua_restriction
+    port: 80
+  - enable: true
+    listenerType: Gateway
+    name: proxy.filters.http.header_restriction
+    port: 80
+  - enable: true
+    listenerType: Gateway
+    name: proxy.filters.http.referer_restriction
+    port: 80
+  - enable: true
+    listenerType: Gateway
     name: proxy.filters.http.staticdowngrade
     port: 80
+  - enable: false
+    listenerType: Gateway
+    name: proxy.filters.http.header_rewrite
+    port: 80
+  - enable: true
+    listenerType: Gateway
+    name: proxy.filters.http.circuitbreaker
+    port: 80
+  - enable: true
+    listenerType: Gateway
+    name: proxy.filters.http.local_cache
+    port: 80
+    inline: 
+      settings:
+        apis_prefix: envoy_local_cache
+        used_caches:
+          - local: {}
   - enable: false
     name: proxy.filters.http.rider
     inline:
