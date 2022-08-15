@@ -168,7 +168,7 @@ response: `403 Foebidden`
 
 通过开发对应的插件schema，可以将插件暴露至网关控制台，便于用户进行配置。
 
-通过编写json schema，将对应的uri-restriction插件暴露在hango控制台。前端schema开发可以参考schema开发手册.md。
+通过编写json schema，将对应的uri-restriction插件暴露在hango控制台。前端schema开发可以参考[schema开发手册.md](schema_guide.md)。
 
 根据需求，开发uri-restriction 前端schema如下：
 
