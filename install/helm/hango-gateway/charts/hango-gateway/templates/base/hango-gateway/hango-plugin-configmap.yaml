@@ -5,113 +5,109 @@ metadata:
   name: hango-rider-plugin
   namespace: {{ .Values.namespace }}
 data:
-  ua-restriction.lua: |
-    require("rider")
+  uri-restriction.lua: |
+    --[[
+    引入v2 rider版本
+    v2版本相对v1版本将request和response分为header和body部分处理，提升不同场景的插件性能
+    -- ]] 
+    require('rider.v2')
+
+    -- 定义本地变量
     local envoy = envoy
-    local get_req_header = envoy.req.get_header
-    local ipairs = ipairs
-    local re_find = string.find
+    local request = envoy.req
     local respond = envoy.respond
-    local logDebug = envoy.logDebug
 
-    local uaRestrictionHandler = {}
-
+    -- 定义本地常量
+    local NO_MATCH = 0
+    local MATCH_WHITELIST = 1
+    local MATCH_BLACKLIST = 2
     local BAD_REQUEST = 400
     local FORBIDDEN = 403
 
-    local MATCH_EMPTY     = 0
-    local MATCH_WHITELIST = 1
-    local MATCH_BLACKLIST = 2
+    local uriRestrictionHandler = {}
 
-    local json_validator = require("rider.json_validator")
+    uriRestrictionHandler.version = 'v2'
 
+    local json_validator = require('rider.json_validator')
+
+    -- 定义全局配置
     local base_json_schema = {
         type = 'object',
-        properties = {},
+        properties = {}
     }
 
+    -- 定义路由级配置
     local route_json_schema = {
         type = 'object',
         properties = {
-          allowlist = {
-            type = 'array',
-            items = {
-              type = 'string',
+            allowlist = {
+                type = 'array',
+                items = {
+                    type = 'string'
+                }
             },
-          },
-          denylist = {
-            type = 'array',
-            items = {
-              type = 'string',
-            },
-          },
-        },
+            denylist = {
+                type = 'array',
+                items = {
+                    type = 'string'
+                }
+            }
+        }
     }
+
     json_validator.register_validator(base_json_schema, route_json_schema)
 
-    --- strips whitespace from a string.
-    local function strip(str)
-      if str == nil then
-        return ""
-      end
-      str = tostring(str)
-      if #str > 200 then
-        return str:gsub("^%s+", ""):reverse():gsub("^%s+", ""):reverse()
-      else
-        return str:match("^%s*(.-)%s*$")
-      end
-    end
-
-    local function get_user_agent()
-      return get_req_header("user-agent")
-    end
-
-    local function examine_agent(user_agent, allowlist, denylist)
-      user_agent = strip(user_agent)
-
-      if allowlist then
-        for _, rule in ipairs(allowlist) do
-          logDebug("allowist: compare "..rule.." and "..user_agent)
-          if re_find(user_agent, rule) then
-            return MATCH_WHITELIST
-          end
+    -- 定义本地校验uri黑白名单方法
+    local function checkUriPath(uriPath, allowlist, denylist)
+        if allowlist then
+            for _, rule in ipairs(allowlist) do
+                envoy.logDebug('allowist: compare ' .. rule .. ' and ' .. uriPath)
+                if string.find(uriPath, rule) then
+                    return MATCH_WHITELIST
+                end
+            end
         end
-      end
 
-      if denylist then
-        for _, rule in ipairs(denylist) do
-          logDebug("denylist: compare "..rule.." and "..user_agent)
-          if re_find(user_agent, rule) then
-            return MATCH_BLACKLIST
-          end
+        if denylist then
+            for _, rule in ipairs(denylist) do
+                envoy.logDebug('denylist: compare ' .. rule .. ' and ' .. uriPath)
+                if string.find(uriPath, rule) then
+                    return MATCH_BLACKLIST
+                end
+            end
         end
-      end
 
-      return MATCH_EMPTY
+        return NO_MATCH
     end
 
-    function uaRestrictionHandler:on_request()
-      local config = envoy.get_route_config()
-      if config == nil then
-        return
-      end
+    -- 定义request的header阶段处理函数
+    function uriRestrictionHandler:on_request_header()
+        local uriPath = request.get_header(':path')
+        local config = envoy.get_route_config()
 
-      logDebug("Checking user-agent");
+        envoy.logInfo('start lua uriRestriction')
+        if uriPath == nil then
+            envoy.logErr('no uri path!')
+            return
+        end
 
-      local user_agent = get_user_agent()
-      if user_agent == nil then
-        return respond({[":status"] = BAD_REQUEST}, "user-agent not found")
-      end
+        -- 配置未定义报错
+        if config == nil then
+            envoy.logErr('no route config!')
+            return
+        end
 
-      local match  = examine_agent(user_agent, config.allowlist, config.denylist)
+        local match = checkUriPath(uriPath, config.allowlist, config.denylist)
 
-      if match > 1 then
-        logDebug("UA is now allowed: "..user_agent);
-        return respond({[":status"] = FORBIDDEN}, "Forbidden")
-      end
+        envoy.logDebug('on_request_header, uri path: ' .. uriPath .. ', match result: ' .. match)
+
+        if match > 1 then
+            envoy.logDebug('path is now allowed: ' .. uriPath)
+            return respond({[':status'] = FORBIDDEN}, 'Forbidden')
+        end
     end
 
-    return uaRestrictionHandler
+    return uriRestrictionHandler
 
 ---
 apiVersion: v1
@@ -252,12 +248,11 @@ data:
         }
       ]
     }
-  ua-restriction.json: |-
+  uri-restriction.json: |-
     {
       "formatter": {
-        "kind": "ua-restriction",
+        "kind": "uri-restriction",
         "type": "lua",
-        "need_to_response": "&need_to_response",
         "config": {
           "allowlist": "&allowlist",
           "denylist": "&denylist"
@@ -267,7 +262,7 @@ data:
         {
           "key": "allowlist",
           "alias": "白名单",
-          "help": "User-Agent优先匹配白名单，命中之后直接放行，支持正则",
+          "help": "URI优先匹配白名单，命中之后直接放行，支持正则",
           "type": "multi_input",
           "rules": [
           ]
@@ -275,9 +270,80 @@ data:
         {
           "key": "denylist",
           "alias": "黑名单",
-          "help": "User-Agent优先匹配白名单，没有命中，继续匹配黑名单，命中之后直接禁止，支持正则",
+          "help": "URI优先匹配白名单，没有命中，继续匹配黑名单，命中之后直接禁止，支持正则",
           "type": "multi_input",
           "rules": [
+          ]
+        }
+      ]
+    }
+  ua-restriction.json: |-
+    {
+      "inject": {
+        "kind": "ua-restriction"
+      },
+      "layouts": [
+        {
+          "key": "type",
+          "alias": "黑白名单类型",
+          "type": "select",
+          "options": [
+            {
+              "text": "黑名单",
+              "value": "0"
+            },
+            {
+              "text": "白名单",
+              "value": "1"
+            }
+          ],
+          "rules": [
+            "Required",
+            "Number"
+          ]
+        },
+        {
+          "key": "list",
+          "alias": "过滤列表",
+          "type": "array",
+          "layouts": [
+            {
+              "key": "match_type",
+              "alias": "匹配方式",
+              "type": "select",
+              "default": "exact_match",
+              "options": [
+                {
+                  "text": "精确匹配",
+                  "value": "exact_match"
+                },
+                {
+                  "text": "前缀匹配",
+                  "value": "prefix_match"
+                },
+                {
+                  "text": "正则表达式",
+                  "value": "safe_regex_match"
+                }
+              ]
+            },
+            {
+              "key": "value",
+              "type": "multi_input",
+              "alias": "取值",
+              "invisible": {
+                "present_match": ["this", "match_type"],
+                "present_match_invert": ["this", "match_type"]
+              },
+              "rules": [
+                "MaxLength(200)",
+                "Required"
+              ]
+            }
+          ],
+          "rules": [
+            "MaxLength(200)",
+            "Required"
           ]
         }
       ]
@@ -1206,6 +1272,21 @@ data:
           "instructionForUse": "提供错误率和时延触发的熔断",
           "categoryKey": "trafficPolicy",
           "categoryName": "流量管理"
+        },
+        {
+          "name": "uri-restriction",
+          "displayName": "URI黑白名单",
+          "schema": "plugin/route/uri-restriction.json",
+          "description": "URI黑白名单插件",
+          "processor": "AggregateGatewayPluginProcessor",
+          "author": "system",
+          "createTime": "1655279630000",
+          "updateTime": "1655279630000",
+          "pluginScope": "global,routeRule",
+          "pluginPriority": "3000",
+          "instructionForUse": "URI黑白名单插件",
+          "categoryKey": "security",
+          "categoryName": "安全"
         }
       ]
     }
