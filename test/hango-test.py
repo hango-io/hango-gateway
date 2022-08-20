@@ -199,13 +199,16 @@ def bind_plugin(rout_id, gw_id, plugin_type, plugin_conf):
         print("bingding plugin  " + plugin_type + "  -------------ok")
 
 
-def invoke_gw(add_headers=None):
+def invoke_gw(add_headers=None, add_params=None):
     url = "http://" + const.GW + "/hango/unit"
     HEADERS = {'host': 'istio.com'}
+    PARAMS = {}
     if add_headers is not None:
         HEADERS = HEADERS.copy()
         HEADERS.update(add_headers)
-    r = requests.get(url, headers=HEADERS)
+    if add_params is not None:
+        PARAMS.update(add_params)
+    r = requests.get(url, headers=HEADERS, params=PARAMS)
     return r.status_code
 
 def invoke_gw_return_h(add_headers=None):
@@ -258,6 +261,14 @@ time.sleep(2)
 ua_local = {'User-Agent': 'bot'}
 if(403 == invoke_gw(ua_local)):
     print("invode_gw ua-restriction plugin ok---------------ua-restriction")
+
+# URI黑白名单，uri-restriction
+uri_restriction = "{\"kind\":\"uri-restriction\",\"type\":\"lua\",\"config\":{\"allowlist\":[],\"denylist\":[\"d1\"]}}"
+bind_plugin(route_id, gw_id, "uri-restriction", uri_restriction)
+time.sleep(2)
+uri_params = {'d': 'd1'}
+if(403 == invoke_gw(None, uri_params)):
+    print("invode_gw uri-restriction plugin ok---------------uri-restriction")
 
 # Header黑白名单，header-restriction
 header_restriction = "{\"type\":\"0\",\"list\":[{\"header\":\"header_test\",\"match_type\":\"exact_match\",\"value\":[\"black\"]}],\"kind\":\"header-restriction\"}"

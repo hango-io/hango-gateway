@@ -76,7 +76,7 @@ spec:
         apis_prefix: envoy_local_cache
         used_caches:
           - local: {}
-  - enable: false
+  - enable: true
     name: proxy.filters.http.rider
     inline:
       settings:
@@ -85,8 +85,8 @@ spec:
             package_path: "/usr/local/lib/rider/?/init.lua;/usr/local/lib/rider/?.lua;"
           code:
             local:
-              filename: /usr/local/lib/rider/plugins/ua-restriction.lua
-          name: ua-restriction
+              filename: /usr/local/lib/rider/plugins/uri-restriction.lua
+          name: uri-restriction
           config: {}
     listenerType: Gateway
     port: 80

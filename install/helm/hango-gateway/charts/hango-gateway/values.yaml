@@ -2,8 +2,8 @@ data_dir: /data
 cluster_dns_domain: cluster.local
 
 images:
-  hango_apiplane_image: docker.io/hangoio/api-plane:v1.0.1-7643dc0c-amd64
-  hango_portal_image: docker.io/hangoio/hango-portal:v1.0.3-40b0cdb96
+  hango_apiplane_image: docker.io/hangoio/api-plane:latest
+  hango_portal_image: docker.io/hangoio/hango-portal:latest
   hango_ui_image: docker.io/hangoio/hango-ui:v1.0.1-f7ddf75e
   istiod_image: docker.io/hangoio/istiod:hango-1.0.0-rc1
   slime_image: docker.io/hangoio/slime:v0.1.2-d6140060

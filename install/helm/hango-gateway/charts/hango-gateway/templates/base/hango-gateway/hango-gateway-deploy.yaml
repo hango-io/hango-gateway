@@ -517,6 +517,8 @@ spec:
         - mountPath: /etc/istio/ingressgateway-ca-certs
           name: ingressgateway-ca-certs
           readOnly: true
+        - mountPath: /usr/local/lib/rider/plugins
+          name: hango-rider-plugin
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
@@ -556,3 +558,7 @@ spec:
           defaultMode: 420
           optional: true
           secretName: istio-ingressgateway-ca-certs
+      - configMap:
+          defaultMode: 420
+          name: hango-rider-plugin
+        name: hango-rider-plugin
