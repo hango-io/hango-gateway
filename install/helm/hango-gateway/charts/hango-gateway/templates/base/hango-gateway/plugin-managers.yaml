@@ -59,7 +59,7 @@ spec:
     listenerType: Gateway
     name: proxy.filters.http.staticdowngrade
     port: 80
-  - enable: false
+  - enable: true
     listenerType: Gateway
     name: proxy.filters.http.header_rewrite
     port: 80
