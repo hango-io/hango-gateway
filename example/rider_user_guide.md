@@ -104,9 +104,8 @@ function uriRestrictionHandler:on_request_header()
         return
     end
 
-    -- 配置未定义报错
+    -- 'nil' indicates that the route configuration does not exist (route plugin is not configured)
     if config == nil then
-        envoy.logErr('no route config!')
         return
     end
 

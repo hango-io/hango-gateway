@@ -104,9 +104,8 @@ function uriRestrictionHandler:on_request_header()
         return
     end
 
-    -- 配置未定义报错
+    -- 配置为nil代表路由级别配置不存在（未配置路由级插件）
     if config == nil then
-        envoy.logErr('no route config!')
         return
     end
 
