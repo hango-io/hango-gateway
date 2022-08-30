@@ -28,6 +28,8 @@ spec:
     port: 80
   - enable: true
     name: envoy.filters.http.fault
+    listenerType: Gateway
+    port: 80
   - enable: true
     listenerType: Gateway
     name: proxy.filters.http.detailed_stats

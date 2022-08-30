@@ -278,6 +278,19 @@ header_local = {'header_test': 'black'}
 if(403 == invoke_gw(header_local)):
     print("invode_gw header-restriction plugin ok---------------header-restriction")
 
+# 百分比限流测试，percent-limit
+percent_limit = "{\"limit_percent\":50,\"kind\":\"percent-limit\",\"name\":\"percent-limit\"}"
+bind_plugin(route_id, gw_id, "percent-limit", percent_limit)
+
+for i in range(50):
+    if(429 == invoke_gw()):
+        print("invode_gw percent-limit plugin ok---------------percent-limit")
+        break
+
+# offline percentlimit
+offline_plugin(describe_plugin_id(route_id, gw_id, "percent-limit"), "percent-limit")
+time.sleep(2)
+
 
 # 本地缓存插件， local-cache
 local_cache = "{\"condition\":{\"request\":{\"requestSwitch\":false},\"response\":{\"responseSwitch\":true,\"code\":{\"match_type\":\"exact_match\",\"value\":\"200\"},\"headers\":[]}},\"ttl\":{\"local\":{\"default\":\"30000\",\"custom\":[]}},\"kind\":\"local-cache\",\"keyMaker\":{\"excludeHost\":false,\"ignoreCase\":true,\"queryString\":[],\"headers\":[]}}"
