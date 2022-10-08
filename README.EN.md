@@ -12,6 +12,12 @@ Hango provides functions such as request proxy, dynamic routing, load balancing,
 
 Through the Hango Rider module, users can customize multi-language plugins for capability expansion.
 
+## Documentation
+
+[Blog](https://hango-io.github.io/): introducing Hango
+[QuickStart](https://github.com/hango-io/hango-gateway/blob/master/example/expose_api_with_ui.zh_CN.md)
+[RoadMap](changelog/RoadMap%202022.md)
+
 ## Summary
 
 [Why Hango](#why-hango)
