@@ -1,7 +1,8 @@
-#Update Gateway  By CURL Commands
+# Update Gateway  By CURL Commands
 
 ### Update API-Plane and Envoy proxy address. 
-curl -v -H "Content-Type:aplication/json" -d '{
+```shell
+curl -v -H "Content-Type:application/json" -d '{
   "Gwid":1,
   "ApiPlaneAddr": "http://api-plane-sm.qa-ci.service.163.org",
   "Description": "Hango gateway test.",
@@ -21,3 +22,4 @@ curl -v -H "Content-Type:aplication/json" -d '{
     3
   ]
 }' http://apigw-gportal-envoy.qa-ci.service.163.org/gdashboard?Action=UpdateGateway&Version=2018-08-09
+```
