@@ -3,10 +3,11 @@
 ## 插件
 
 * [插件界面配置引导](plugin/plugin-configuring-guide.md)
-
 * [percent-limit](plugin/percent-limit.md)
+* [static-downgrade](plugin/static-downgrade.md)
+* [response-header-rewrite](plugin/response-header-rewrite.md)
+* [ua-restriction](plugin/ua-restriction.md)
 
 ## 问题定位
 
 * [问题定位引导](troubleshooting/troubleshooting.md)
-
