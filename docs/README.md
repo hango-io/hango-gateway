@@ -3,8 +3,9 @@
 ## 插件
 
 * [插件界面配置引导](plugin/plugin-configuring-guide.md)
-
 * [percent-limit](plugin/percent-limit.md)
+* [static-downgrade](plugin/static-downgrade.md)
+* [response-header-rewrite](plugin/response-header-rewrite.md)
 
 ## 问题定位
 

@@ -1,14 +1,16 @@
-# 百分比限流
+# 响应头部重写
 
 ## 描述
 
-`percent-limit`插件可以对网关流量基于百分比粒度进行限流
+`response-header-rewrite`插件对请求的响应头进行变更，包括新增、删除和修改操作
 
 ## 属性
 
-| 名称    | 类型     | 必选项 | 默认值 | 描述         |
-|-------|--------|-----|-----|------------|
-| 限流百分比 | number | 是   | -   | 允许通过流量的百分比 |
+| 名称       | 类型     | 必选项 | 默认值   | 描述           |
+|----------|--------|-----|-------|--------------|
+| Header名称 | string | 是   | -     | 需要操作的响应头名称   |
+| 修改类型     | select | 是   | 创建或追加 | 对响应的的操作类型    |
+| 取值       | string | 是   | -     | 对于响应头新增或修改的值 |
 
 
 ## 前置条件
@@ -22,15 +24,15 @@ curl -XPOST -v -H "Content-Type:application/json" -d '{
   "BindingObjectId": {{ 路由ID }},
   "BindingObjectType": "routeRule",
   "GwId": {{ 网关ID }},
-  "PluginConfiguration": "{\"limit_percent\":\"50\",\"kind\":\"percent-limit\"}",
-  "PluginType": "percent-limit"
+  "PluginConfiguration": "{\"headerKey\":[\"headerKey\": \"testHeader\",\"operation\": \"update\",\"headerValue\": \"testHeaderValue\"]}",
+  "PluginType": "response-header-rewrite"
 }' http://{{ hango-portal ip:port }}/gdashboard?Action=BindingPlugin&Version=2019-09-01
 ```
 
 ## 测试
 
 ```shell
-## 通过脚本多次调用以下curl命令，测试网关百分比限流效果
+## 基于如下基础curl命令，根据后端服务要求将请求具体化，观察响应中的头变化是否符合插件配置的预期（响应头是否新增、被修改或删除）
 curl -v "http://{{ 网关IP }}/{{ 路由path }}" -H "host:{{ 网关关联域名 }}"
 ```
 
