@@ -1,53 +1,7 @@
----
-apiVersion: apiextensions.k8s.io/v1beta1
-kind: CustomResourceDefinition
-metadata:
-  name: smartlimiters.microservice.slime.io
-  annotations:
-    "helm.sh/resource-policy": keep
-spec:
-  group: microservice.slime.io
-  names:
-    kind: SmartLimiter
-    listKind: SmartLimiterList
-    plural: smartlimiters
-    singular: smartlimiter
-  scope: Namespaced
-  subresources:
-    status: {}
-  version: v1alpha2
-  versions:
-    - name: v1alpha2
-      served: true
-      storage: true
----
-apiVersion: apiextensions.k8s.io/v1beta1
-kind: CustomResourceDefinition
-metadata:
-  name: envoyplugins.microservice.slime.io
-  annotations:
-    "helm.sh/resource-policy": keep
-spec:
-  group: microservice.slime.io
-  names:
-    shortNames:
-      - evp
-    kind: EnvoyPlugin
-    listKind: EnvoyPluginList
-    plural: envoyplugins
-    singular: envoyplugin
-  scope: Namespaced
-  versions:
-    - name: v1alpha1
-      served: true
-      storage: true
----
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   name: pluginmanagers.microservice.slime.io
-  annotations:
-    "helm.sh/resource-policy": keep
 spec:
   group: microservice.slime.io
   names:
@@ -60,5 +14,576 @@ spec:
   scope: Namespaced
   versions:
     - name: v1alpha1
+      schema:
+        openAPIV3Schema:
+          properties:
+            apiVersion:
+              description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values'
+              type: string
+            kind:
+              description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase'
+              type: string
+            metadata:
+              type: object
+            spec:
+              description: 'pluginmanager spec'
+              type: object
+              properties:
+                gateway:
+                  description: which gateway should use this plugin setting
+                  items:
+                    type: string
+                  type: array
+                plugin:
+                  items:
+                    oneOf:
+                      - not:
+                          anyOf:
+                            - required:
+                                - wasm
+                            - required:
+                                - inline
+                            - required:
+                                - rider
+                      - required:
+                          - wasm
+                      - required:
+                          - inline
+                      - required:
+                          - rider
+                    properties:
+                      enable:
+                        type: boolean
+                      listenerType:
+                        type: string
+                        enum:
+                          - Outbound
+                          - Inbound
+                          - Gateway
+                      name:
+                        type: string
+                      port:
+                        format: int32
+                        type: integer
+                      settings:
+                        description: Deprecated
+                        properties:
+                          fields:
+                            additionalProperties:
+                              description: "`Value` represents a dynamically typed value
+                              which can be either null, a number, a string, a boolean,
+                              a recursive struct value, or a list of values. A producer
+                              of value is expected to set one of that variants, absence
+                              of any variant indicates an error. \n The JSON representation
+                              for `Value` is JSON value."
+                              type: object
+                            description: Unordered map of dynamically typed values.
+                            type: object
+                        type: object
+                      typeUrl:
+                        type: string
+                      rider:
+                        type: object
+                        properties:
+                          url:
+                            type: string
+                          pluginName:
+                            type: string
+                          sha256:
+                            type: string
+                          settings:
+                            type: object
+                            x-kubernetes-preserve-unknown-fields: true
+                          image_pull_secret:
+                            type: object
+                            properties:
+                              imagePullSecretName:
+                                type: string
+                              imagePullSecretContent:
+                                type: string
+                            oneOf:
+                              - required:
+                                  - imagePullSecretName
+                              - required:
+                                  - imagePullSecretContent
+                              - not:
+                                  anyOf:
+                                    - required:
+                                        - imagePullSecretName
+                                    - required:
+                                        - imagePullSecretContent
+                      wasm:
+                        type: object
+                        oneOf:
+                          - required:
+                              - imagePullSecretName
+                          - required:
+                              - imagePullSecretContent
+                          - not:
+                              anyOf:
+                                - required:
+                                    - imagePullSecretName
+                                - required:
+                                    - imagePullSecretContent
+                        properties:
+                          url:
+                            type: string
+                          pluginName:
+                            type: string
+                          sha256:
+                            type: string
+                          settings:
+                            type: object
+                            x-kubernetes-preserve-unknown-fields: true
+                          imagePullSecretName:
+                            type: string
+                          imagePullSecretContent:
+                            type: string
+                      inline:
+                        type: object
+                        properties:
+                          settings:
+                            type: object
+                            x-kubernetes-preserve-unknown-fields: true
+                          directPatch:
+                            type: boolean
+                          fieldPatchTo:
+                            type: string
+                    type: object
+                  type: array
+                workloadLabels:
+                  description: '`WorkloadSelector` specifies the criteria used to determine
+                  if the `Gateway`, `Sidecar`, or `EnvoyFilter` or `ServiceEntry` configuration
+                  can be applied to a proxy. The matching criteria includes the metadata
+                  associated with a proxy, workload instance info such as labels attached
+                  to the pod/VM, or any other info that the proxy provides to Istio during
+                  the initial handshake. If multiple conditions are specified, all conditions
+                  need to match in order for the workload instance to be selected. Currently,
+                  only label based selection mechanism is supported.'
+                  additionalProperties:
+                    type: string
+                  description: workload selector , it should not be nil in Gateway Scenarios
+                  type: object
+            status:
+              type: object
+              x-kubernetes-preserve-unknown-fields: true
+          required:
+            - metadata
+            - spec
+          type: object
       served: true
       storage: true
+      subresources:
+        status: {}
+
+
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: envoyplugins.microservice.slime.io
+spec:
+  group: microservice.slime.io
+  names:
+    shortNames:
+      - evp
+    kind: EnvoyPlugin
+    listKind: EnvoyPluginList
+    plural: envoyplugins
+    singular: envoyplugin
+  scope: Namespaced
+  versions:
+    - name: v1alpha1
+      schema:
+        openAPIV3Schema:
+          properties:
+            apiVersion:
+              description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values'
+              type: string
+            kind:
+              description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase'
+              type: string
+            metadata:
+              type: object
+            spec:
+              description: 'envoyplugin spec'
+              type: object
+              properties:
+                gateway:
+                  description: which gateway should use this plugin setting
+                  items:
+                    type: string
+                  type: array
+                host:
+                  description: host level plugin
+                  items:
+                    type: string
+                  type: array
+                isGroupSetting:
+                  description: Deprecated
+                  type: boolean
+                listener:
+                  description: listener level
+                  items:
+                    properties:
+                      outbound:
+                        type: boolean
+                      port:
+                        format: int32
+                        type: integer
+                    type: object
+                  type: array
+                plugins:
+                  items:
+                    oneOf:
+                      - not:
+                          anyOf:
+                            - required:
+                                - wasm
+                            - required:
+                                - inline
+                            - required:
+                                - rider
+                      - required:
+                          - wasm
+                      - required:
+                          - inline
+                      - required:
+                          - rider
+                    properties:
+                      enable:
+                        type: boolean
+                      listenerType:
+                        type: string
+                        enum:
+                          - Outbound
+                          - Inbound
+                          - Gateway
+                      name:
+                        type: string
+                      port:
+                        format: int32
+                        type: integer
+                      settings:
+                        description: Deprecated
+                        properties:
+                          fields:
+                            additionalProperties:
+                              description: "`Value` represents a dynamically typed value
+                              which can be either null, a number, a string, a boolean,
+                              a recursive struct value, or a list of values. A producer
+                              of value is expected to set one of that variants, absence
+                              of any variant indicates an error. \n The JSON representation
+                              for `Value` is JSON value."
+                              type: object
+                            description: Unordered map of dynamically typed values.
+                            type: object
+                        type: object
+                      typeUrl:
+                        type: string
+                      rider:
+                        type: object
+                        properties:
+                          url:
+                            type: string
+                          pluginName:
+                            type: string
+                          sha256:
+                            type: string
+                          settings: # TODO more detailed
+                            type: object
+                            x-kubernetes-preserve-unknown-fields: true
+                          image_pull_secret:
+                            type: object
+                            properties:
+                              imagePullSecretName:
+                                type: string
+                              imagePullSecretContent:
+                                type: string
+                            oneOf:
+                              - required:
+                                  - imagePullSecretName
+                              - required:
+                                  - imagePullSecretContent
+                              - not:
+                                  anyOf:
+                                    - required:
+                                        - imagePullSecretName
+                                    - required:
+                                        - imagePullSecretContent
+                      wasm:
+                        type: object
+                        oneOf:
+                          - required:
+                              - imagePullSecretName
+                          - required:
+                              - imagePullSecretContent
+                          - not:
+                              anyOf:
+                                - required:
+                                    - imagePullSecretName
+                                - required:
+                                    - imagePullSecretContent
+                        properties:
+                          url:
+                            type: string
+                          pluginName:
+                            type: string
+                          sha256:
+                            type: string
+                          settings: # TODO more detailed
+                            type: object
+                            x-kubernetes-preserve-unknown-fields: true
+                          imagePullSecretName:
+                            type: string
+                          imagePullSecretContent:
+                            type: string
+                      inline:
+                        type: object
+                        properties:
+                          settings: # TODO more detailed
+                            type: object
+                            x-kubernetes-preserve-unknown-fields: true
+                          directPatch:
+                            type: boolean
+                          fieldPatchTo:
+                            type: string
+                    type: object
+                  type: array
+                route:
+                  description: route level plugin
+                  items:
+                    type: string
+                  type: array
+                service:
+                  description: service level plugin
+                  items:
+                    type: string
+                  type: array
+                user:
+                  description: which user should use this plugin setting
+                  items:
+                    type: string
+                  type: array
+                workloadSelector:
+                  description: '`WorkloadSelector` specifies the criteria used to determine
+                  if the `Gateway`, `Sidecar`, or `EnvoyFilter` or `ServiceEntry` configuration
+                  can be applied to a proxy. The matching criteria includes the metadata
+                  associated with a proxy, workload instance info such as labels attached
+                  to the pod/VM, or any other info that the proxy provides to Istio during
+                  the initial handshake. If multiple conditions are specified, all conditions
+                  need to match in order for the workload instance to be selected. Currently,
+                  only label based selection mechanism is supported.'
+                  additionalProperties:
+                    type: string
+                  description: workload selector , it should not be nil in Gateway Scenarios
+                  type: object
+            status:
+              type: object
+              x-kubernetes-preserve-unknown-fields: true
+          required:
+            - metadata
+            - spec
+          type: object
+      served: true
+      storage: true
+      subresources:
+        status: {}
+
+---
+
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: smartlimiters.microservice.slime.io
+spec:
+  group: microservice.slime.io
+  names:
+    shortNames:
+      - sml
+    kind: SmartLimiter
+    listKind: SmartLimiterList
+    plural: smartlimiters
+    singular: smartlimiter
+  scope: Namespaced
+  versions:
+    - name: v1alpha2
+      schema:
+        openAPIV3Schema:
+          description: SmartLimiter is the Schema for the smartlimiters API
+          properties:
+            apiVersion:
+              description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values'
+              type: string
+            kind:
+              description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase'
+              type: string
+            metadata:
+              type: object
+            spec:
+              properties:
+                gateway:
+                  description: is gateway
+                  type: boolean
+                host:
+                  description: hostname specify svc host
+                  type: string
+                rls:
+                  description: deprecated, mv to limiter_module.proto
+                  type: string
+                sets:
+                  additionalProperties:
+                    properties:
+                      descriptor:
+                        description: Description of current rate-limit
+                        items:
+                          properties:
+                            action:
+                              properties:
+                                fill_interval:
+                                  properties:
+                                    nanos:
+                                      description: Signed fractions of a second at nanosecond
+                                        resolution of the span of time. Durations less
+                                        than one second are represented with a 0 `seconds`
+                                        field and a positive or negative `nanos` field.
+                                        For durations of one second or more, a non-zero
+                                        value for the `nanos` field must be of the same
+                                        sign as the `seconds` field. Must be from -999,999,999
+                                        to +999,999,999 inclusive.
+                                      format: int32
+                                      type: integer
+                                    seconds:
+                                      description: 'Signed seconds of the span of time.
+                                      Must be from -315,576,000,000 to +315,576,000,000
+                                      inclusive. Note: these bounds are computed from:
+                                      60 sec/min * 60 min/hr * 24 hr/day * 365.25
+                                      days/year * 10000 years'
+                                      format: int64
+                                      type: integer
+                                  type: object
+                                quota:
+                                  type: string
+                                strategy:
+                                  type: string
+                              type: object
+                            condition:
+                              type: string
+                            custom_key:
+                              type: string
+                            custom_value:
+                              type: string
+                            match:
+                              items:
+                                properties:
+                                  exact_match:
+                                    description: If specified, header match will be
+                                      performed based on the value of the header.
+                                    type: string
+                                  invert_match:
+                                    description: If specified, the match result will
+                                      be inverted before checking. Defaults to false.
+                                      * The regex ``\d{3}`` does not match the value
+                                      *1234*, so it will match when inverted.
+                                    type: boolean
+                                  is_exact_match_empty:
+                                    description: if specified, the exact match the value
+                                      ""
+                                    type: boolean
+                                  name:
+                                    type: string
+                                  prefix_match:
+                                    description: '* The prefix *abcd* matches the value
+                                    *abcdxyz*, but not for *abcxyz*.'
+                                    type: string
+                                  present_match:
+                                    description: If specified as true, header match
+                                      will be performed based on whether the header
+                                      is in the request. If specified as false, header
+                                      match will be performed based on whether the header
+                                      is absent.
+                                    type: boolean
+                                  present_match_separate:
+                                    description: similar to present_match, the difference
+                                      is that the different values have separate token
+                                      while present_match shares token it only works
+                                      in envoy.filters.http.ratelimit (global)
+                                    type: boolean
+                                  regex_match:
+                                    description: If specified, this regex string is
+                                      a regular expression rule which implies the entire
+                                      request header value must match the regex. The
+                                      rule will not match if only a subsequence of the
+                                      request header value matches the regex.
+                                    type: string
+                                  suffix_match:
+                                    description: '* The suffix *abcd* matches the value
+                                    *xyzabcd*, but not for *xyzbcd*.'
+                                    type: string
+                                type: object
+                              type: array
+                            target:
+                              properties:
+                                direction:
+                                  type: string
+                                host:
+                                  items:
+                                    type: string
+                                  type: array
+                                port:
+                                  format: int32
+                                  type: integer
+                                route:
+                                  items:
+                                    type: string
+                                  type: array
+                              type: object
+                          type: object
+                        type: array
+                    type: object
+                  description: subset rate-limit,the key is subset name.
+                  type: object
+                target:
+                  description: rate limit target
+                  properties:
+                    direction:
+                      type: string
+                    host:
+                      items:
+                        type: string
+                      type: array
+                    port:
+                      format: int32
+                      type: integer
+                    route:
+                      items:
+                        type: string
+                      type: array
+                  type: object
+                workloadSelector:
+                  additionalProperties:
+                    type: string
+                  description: workload selector , it should not be nil in Gateway Scenarios
+                  type: object
+              type: object
+            status:
+              x-kubernetes-preserve-unknown-fields: true
+              type: object
+          type: object
+      served: true
+      storage: true
+      subresources:
+        status: {}
