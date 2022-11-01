@@ -2,12 +2,14 @@
 
 ## 前置条件
 
-1.目前版本支持基于Kubernetes进行安装，如果没有Kubernetes环境，可以采用[minikube](https://minikube.sigs.k8s.io/docs/start/) 进行安装。对于Kubernetes的版本，我们要求版本至少是1.17 版本。\
+1.目前版本支持基于Kubernetes进行安装，如果没有Kubernetes环境，可以采用[minikube](https://minikube.sigs.k8s.io/docs/start/) 进行安装。对于Kubernetes的版本，我们要求版本至少是1.17 版本，低于1.22 版本。\
 2.请确保已安装helm。
 
 ### 安装hango网关
 
-1、进入"hango-gateway/install"目录下，目录结构树如下
+1、前往github hango-gateway的[releases界面](https://github.com/hango-io/hango-gateway/releases)下载最新的[release-v1.0.0版本](https://github.com/hango-io/hango-gateway/releases/download/v1.0.0/hango-gateway-v1.0.0.zip)，将压缩包解压为本地目录
+
+2、进入"hango-gateway/install"目录下，目录结构树如下
 ```xml
 install
 ├─common
@@ -18,12 +20,12 @@ install
 ├─check.sh
 └─uninstall.sh
 ```
-2、您将看到3个脚本分别用于安装（install.sh）、检查状态（check.sh）、卸载（uninstall.sh），可直接执行命令\
+3、您将看到3个脚本分别用于安装（install.sh）、检查状态（check.sh）、卸载（uninstall.sh），可直接执行命令\
 注意：在脚本执行前请确保权限足够
 ```shell
 sh install.sh
 ```
-3、等待脚本执行完毕后，可以通过执行下面的命令查看hango网关的运行状态
+4、等待脚本执行完毕后，可以通过执行下面的命令查看hango网关的运行状态
 ```shell
 sh check.sh
 ```
