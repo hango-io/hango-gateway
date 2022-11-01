@@ -79,10 +79,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: slime
+  name: slime-hango
   namespace: {{ .Values.namespace }}
   labels:
-    app: slime
+    app: slime-hango
 spec:
   type: ClusterIP
   ports:
@@ -94,12 +94,8 @@ spec:
       targetPort: aux-port
       protocol: TCP
       name: aux-port
-    - port: 8082
-      targetPort: log-source-port
-      protocol: TCP
-      name: log-source-port
   selector:
-    app: slime
+    app: slime-hango
 
 ---
 ---

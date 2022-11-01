@@ -4,11 +4,13 @@
 
 We use helm to install gateway on kubernetes. If you do not have a kubernetes, you can start with [minikube start](https://minikube.sigs.k8s.io/docs/start/)
 
-Kubernetes Version >=1.17
+1.22 > Kubernetes Version >=1.17
 
 ### Install with Shell
 
-1. Go to the "hango-gateway/install" directory. The directory structure tree is as follows
+1. Go to github hango-gateway's [releases page](https://github.com/hango-io/hango-gateway/releases) to download the latest version: [release-v1.0.0](https://github.com/hango-io/hango-gateway/releases/download/v1.0.0/hango-gateway-v1.0.0.zip), then decompress the zip file to a local directory
+
+2. Go to the "hango-gateway/install" directory. The directory structure tree is as follows
 ```xml
 install
 install
@@ -20,13 +22,13 @@ install
 ├─check.sh
 └─uninstall.sh
 ```
-2. You will see three scripts for install (install.sh), check status (check.sh), and uninstall (uninstall.sh) respectively. You can directly execute the command
+3. You will see three scripts for install (install.sh), check status (check.sh), and uninstall (uninstall.sh) respectively. You can directly execute the command
 
 Note: Make sure you have sufficient permissions before executing the script
 ```shell
 sh install.sh
 ```
-3. After the script is executed, run the following command to verify the running status of the Hango gateway
+4. After the script is executed, run the following command to verify the running status of the Hango gateway
 ```shell
 sh check.sh
 ```

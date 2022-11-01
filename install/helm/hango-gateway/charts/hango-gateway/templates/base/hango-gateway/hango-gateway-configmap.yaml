@@ -264,37 +264,17 @@ metadata:
 
 ---
 apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: slime
-  namespace: {{ .Values.namespace }}
 data:
   cfg: |
-    bundle:
-      modules:
-          - name: plugin
-            kind: plugin
-    enable: true
-    global:
-      strictRev: true
-      istioRev: {{ .Values.istio_rev }}
-      istioNamespace: {{ .Values.namespace }}
-      slimeNamespace: {{ .Values.namespace }}
-      configSources:
-        - address: sss://
-      log:
-        klogLevel: {{ .Values.slime.cfg.global.log.klogLevel }}
-        logLevel: {{ .Values.slime.cfg.global.log.logLevel }}
-      misc:
-        seLabelSelectorKeys: {{ .Values.slime.cfg.global.misc.seLabelSelectorKeys }}
-    name: slime
+    {"bundle":{"modules":[{"kind":"limiter","name":"limiter"},{"kind":"plugin","name":"plugin"}]},"enable":true,"global":{"configSources":[{"address":"ss://"}],"log":{"logLevel":"info"}},"name":"bundle"}
+  cfg_limiter: |
+    {"enable":true,"general":{"disableAdaptive":true,"disableGlobalRateLimit":true,"disableInsertGlobalRateLimit":true},"kind":"limiter","mode":"BundleItem","name":"limiter"}
   cfg_plugin: |
-    name: plugin
-    kind: plugin
-    enable: true
-    mode: BundleItem
-
-
+    {"enable":true,"kind":"plugin","mode":"BundleItem","name":"plugin"}
+kind: ConfigMap
+metadata:
+  name: slime-hango
+  namespace: {{ .Values.namespace }}
 
 ---
 apiVersion: v1
