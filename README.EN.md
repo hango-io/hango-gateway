@@ -117,6 +117,7 @@ Hango Gateway is an open-source project, and welcomes any and all contributors. 
 
 * Mail List: Mail to hango.io@gmail.com, follow the reply to subscribe to the mailing list.
 * QQ Group 914823850
+* WeChat Group：Scan QR <img src="./images/hango-wechat.png" width="180px">
 * Check out the Hango documentation
 * Read the [CONTRIBUTING.md](CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) files.
 

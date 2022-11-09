@@ -113,6 +113,7 @@ Hango UI提供了用户使用指南，通过使用指南用户可以方面上手
 
 * 邮件：hango.io@gmail.com
 * qq群：Hango 交流群 914823850
+* 微信群：扫码加入 - Hango 开源交流群 <img src="./images/hango-wechat.png" width="180px">
 * 参考[CONTRIBUTING.md](CONTRIBUTING.md) 和 [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) 文件
 
 同时，也可以通过以下方式进行项目贡献：
