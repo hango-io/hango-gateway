@@ -72,12 +72,12 @@ function helm_install_for_hango_component() {
 function verify_hango_install() {
     while true
     do
+       sleep 10s
        pod_number=`kubectl -n $HANGO_NAMESPACE get pods | grep Running | wc -l`
        if [[ $pod_number -ge 7 ]]; then
           echo "hango pod running"
           break
        fi
-       sleep 10
     done    
 }
 
@@ -96,7 +96,7 @@ function main() {
     log "start to init hango components(asynchronously), you are supposed to check their status manually."
     helm_install_for_hango_component
     log "install finished!"
-    log "stat verify hango install"
+    log "start to verify hango install"
     verify_hango_install
     log "hango verfied ok"
     "${work_dir}"/init-hango/init.sh

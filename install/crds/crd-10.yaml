@@ -1,9 +1,8 @@
 ---
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   name: authorizationpolicies.rbac.istio.io
-  selfLink: /apis/apiextensions.k8s.io/v1beta1/customresourcedefinitions/authorizationpolicies.rbac.istio.io
 spec:
   group: rbac.istio.io
   names:
@@ -12,13 +11,16 @@ spec:
     plural: authorizationpolicies
     singular: authorizationpolicy
   scope: Namespaced
-  version: v1alpha1
   versions:
   - name: v1alpha1
     served: true
     storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        x-kubernetes-preserve-unknown-fields: true
 ---
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   name: versionmanagers.networking.istio.io
@@ -39,10 +41,17 @@ spec:
       - istio-io
       - networking-istio-io
   scope: Namespaced
-  version: v1alpha3
+  versions:
+    - name: v1alpha3
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   name: virtualservices.networking.istio.io
@@ -66,25 +75,32 @@ spec:
     - istio-io
     - networking-istio-io
   scope: Namespaced
-  version: v1alpha3
-  additionalPrinterColumns:
-  - JSONPath: .spec.gateways
-    description: The names of gateways and sidecars that should apply these routes
-    name: Gateways
-    type: string
-  - JSONPath: .spec.hosts
-    description: The destination hosts to which traffic is being sent
-    name: Hosts
-    type: string
-  - JSONPath: .metadata.creationTimestamp
-    description: |-
-      CreationTimestamp is a timestamp representing the server time when this object was created. It is not guaranteed to be set in happens-before order across separate operations. Clients may not set this value. It is represented in RFC3339 form and is in UTC.
-
-      Populated by the system. Read-only. Null for lists. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
-    name: Age
-    type: date
+  versions:
+    - name: v1alpha3
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
+      additionalPrinterColumns:
+      - jsonPath: .spec.gateways
+        description: The names of gateways and sidecars that should apply these routes
+        name: Gateways
+        type: string
+      - jsonPath: .spec.hosts
+        description: The destination hosts to which traffic is being sent
+        name: Hosts
+        type: string
+      - jsonPath: .metadata.creationTimestamp
+        description: |-
+          CreationTimestamp is a timestamp representing the server time when this object was created. It is not guaranteed to be set in happens-before order across separate operations. Clients may not set this value. It is represented in RFC3339 form and is in UTC.
+    
+          Populated by the system. Read-only. Null for lists. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
+        name: Age
+        type: date
 ---
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   name: destinationrules.networking.istio.io
@@ -108,21 +124,28 @@ spec:
     - istio-io
     - networking-istio-io
   scope: Namespaced
-  version: v1alpha3
-  additionalPrinterColumns:
-  - JSONPath: .spec.host
-    description: The name of a service from the service registry
-    name: Host
-    type: string
-  - JSONPath: .metadata.creationTimestamp
-    description: |-
-      CreationTimestamp is a timestamp representing the server time when this object was created. It is not guaranteed to be set in happens-before order across separate operations. Clients may not set this value. It is represented in RFC3339 form and is in UTC.
-
-      Populated by the system. Read-only. Null for lists. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
-    name: Age
-    type: date
+  versions:
+    - name: v1alpha3
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
+      additionalPrinterColumns:
+      - jsonPath: .spec.host
+        description: The name of a service from the service registry
+        name: Host
+        type: string
+      - jsonPath: .metadata.creationTimestamp
+        description: |-
+          CreationTimestamp is a timestamp representing the server time when this object was created. It is not guaranteed to be set in happens-before order across separate operations. Clients may not set this value. It is represented in RFC3339 form and is in UTC.
+    
+          Populated by the system. Read-only. Null for lists. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
+        name: Age
+        type: date
 ---
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   name: serviceentries.networking.istio.io
@@ -146,29 +169,36 @@ spec:
     - istio-io
     - networking-istio-io
   scope: Namespaced
-  version: v1alpha3
-  additionalPrinterColumns:
-  - JSONPath: .spec.hosts
-    description: The hosts associated with the ServiceEntry
-    name: Hosts
-    type: string
-  - JSONPath: .spec.location
-    description: Whether the service is external to the mesh or part of the mesh (MESH_EXTERNAL or MESH_INTERNAL)
-    name: Location
-    type: string
-  - JSONPath: .spec.resolution
-    description: Service discovery mode for the hosts (NONE, STATIC, or DNS)
-    name: Resolution
-    type: string
-  - JSONPath: .metadata.creationTimestamp
-    description: |-
-      CreationTimestamp is a timestamp representing the server time when this object was created. It is not guaranteed to be set in happens-before order across separate operations. Clients may not set this value. It is represented in RFC3339 form and is in UTC.
-
-      Populated by the system. Read-only. Null for lists. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
-    name: Age
-    type: date
+  versions:
+    - name: v1alpha3
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
+      additionalPrinterColumns:
+      - jsonPath: .spec.hosts
+        description: The hosts associated with the ServiceEntry
+        name: Hosts
+        type: string
+      - jsonPath: .spec.location
+        description: Whether the service is external to the mesh or part of the mesh (MESH_EXTERNAL or MESH_INTERNAL)
+        name: Location
+        type: string
+      - jsonPath: .spec.resolution
+        description: Service discovery mode for the hosts (NONE, STATIC, or DNS)
+        name: Resolution
+        type: string
+      - jsonPath: .metadata.creationTimestamp
+        description: |-
+          CreationTimestamp is a timestamp representing the server time when this object was created. It is not guaranteed to be set in happens-before order across separate operations. Clients may not set this value. It is represented in RFC3339 form and is in UTC.
+    
+          Populated by the system. Read-only. Null for lists. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
+        name: Age
+        type: date
 ---
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   name: gateways.networking.istio.io
@@ -191,9 +221,16 @@ spec:
     - istio-io
     - networking-istio-io
   scope: Namespaced
-  version: v1alpha3
+  versions:
+    - name: v1alpha3
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   name: envoyfilters.networking.istio.io
@@ -214,10 +251,17 @@ spec:
     - istio-io
     - networking-istio-io
   scope: Namespaced
-  version: v1alpha3
+  versions:
+    - name: v1alpha3
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: clusterrbacconfigs.rbac.istio.io
   labels:
@@ -237,10 +281,17 @@ spec:
     - istio-io
     - rbac-istio-io
   scope: Cluster
-  version: v1alpha1
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: policies.authentication.istio.io
   labels:
@@ -260,10 +311,17 @@ spec:
     - istio-io
     - authentication-istio-io
   scope: Namespaced
-  version: v1alpha1
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: meshpolicies.authentication.istio.io
   labels:
@@ -284,10 +342,17 @@ spec:
     - istio-io
     - authentication-istio-io
   scope: Cluster
-  version: v1alpha1
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: httpapispecbindings.config.istio.io
   labels:
@@ -307,10 +372,17 @@ spec:
     - istio-io
     - apim-istio-io
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: httpapispecs.config.istio.io
   labels:
@@ -330,10 +402,17 @@ spec:
     - istio-io
     - apim-istio-io
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: quotaspecbindings.config.istio.io
   labels:
@@ -353,10 +432,17 @@ spec:
     - istio-io
     - apim-istio-io
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: quotaspecs.config.istio.io
   labels:
@@ -376,10 +462,17 @@ spec:
     - istio-io
     - apim-istio-io
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: rules.config.istio.io
   labels:
@@ -401,10 +494,17 @@ spec:
     - istio-io
     - policy-istio-io
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: attributemanifests.config.istio.io
   labels:
@@ -426,10 +526,17 @@ spec:
     - istio-io
     - policy-istio-io
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: bypasses.config.istio.io
   labels:
@@ -451,10 +558,17 @@ spec:
     - istio-io
     - policy-istio-io
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: circonuses.config.istio.io
   labels:
@@ -476,10 +590,17 @@ spec:
     - istio-io
     - policy-istio-io
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: deniers.config.istio.io
   labels:
@@ -501,10 +622,17 @@ spec:
     - istio-io
     - policy-istio-io
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: fluentds.config.istio.io
   labels:
@@ -526,10 +654,17 @@ spec:
     - istio-io
     - policy-istio-io
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: kubernetesenvs.config.istio.io
   labels:
@@ -551,10 +686,17 @@ spec:
     - istio-io
     - policy-istio-io
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: listcheckers.config.istio.io
   labels:
@@ -576,10 +718,17 @@ spec:
     - istio-io
     - policy-istio-io
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: memquotas.config.istio.io
   labels:
@@ -601,10 +750,17 @@ spec:
     - istio-io
     - policy-istio-io
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: noops.config.istio.io
   labels:
@@ -626,10 +782,17 @@ spec:
     - istio-io
     - policy-istio-io
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: opas.config.istio.io
   labels:
@@ -651,10 +814,17 @@ spec:
     - istio-io
     - policy-istio-io
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: prometheuses.config.istio.io
   labels:
@@ -676,10 +846,17 @@ spec:
     - istio-io
     - policy-istio-io
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: rbacs.config.istio.io
   labels:
@@ -701,10 +878,17 @@ spec:
     - istio-io
     - policy-istio-io
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: redisquotas.config.istio.io
   labels:
@@ -723,10 +907,17 @@ spec:
     plural: redisquotas
     singular: redisquota
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: signalfxs.config.istio.io
   labels:
@@ -748,10 +939,17 @@ spec:
     - istio-io
     - policy-istio-io
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: solarwindses.config.istio.io
   labels:
@@ -773,10 +971,17 @@ spec:
     - istio-io
     - policy-istio-io
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: stackdrivers.config.istio.io
   labels:
@@ -798,10 +1003,17 @@ spec:
     - istio-io
     - policy-istio-io
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: statsds.config.istio.io
   labels:
@@ -823,10 +1035,17 @@ spec:
     - istio-io
     - policy-istio-io
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: stdios.config.istio.io
   labels:
@@ -848,10 +1067,17 @@ spec:
     - istio-io
     - policy-istio-io
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: apikeys.config.istio.io
   labels:
@@ -873,10 +1099,17 @@ spec:
     - istio-io
     - policy-istio-io
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: authorizations.config.istio.io
   labels:
@@ -898,10 +1131,17 @@ spec:
     - istio-io
     - policy-istio-io
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: checknothings.config.istio.io
   labels:
@@ -923,10 +1163,17 @@ spec:
     - istio-io
     - policy-istio-io
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: kuberneteses.config.istio.io
   labels:
@@ -948,10 +1195,17 @@ spec:
     - istio-io
     - policy-istio-io
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: listentries.config.istio.io
   labels:
@@ -973,10 +1227,17 @@ spec:
     - istio-io
     - policy-istio-io
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: logentries.config.istio.io
   labels:
@@ -998,30 +1259,37 @@ spec:
     - istio-io
     - policy-istio-io
   scope: Namespaced
-  version: v1alpha2
-  additionalPrinterColumns:
-  - JSONPath: .spec.severity
-    description: The importance of the log entry
-    name: Severity
-    type: string
-  - JSONPath: .spec.timestamp
-    description: The time value for the log entry
-    name: Timestamp
-    type: string
-  - JSONPath: .spec.monitored_resource_type
-    description: Optional expression to compute the type of the monitored resource this log entry is being recorded on
-    name: Res Type
-    type: string
-  - JSONPath: .metadata.creationTimestamp
-    description: |-
-      CreationTimestamp is a timestamp representing the server time when this object was created. It is not guaranteed to be set in happens-before order across separate operations. Clients may not set this value. It is represented in RFC3339 form and is in UTC.
-
-      Populated by the system. Read-only. Null for lists. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
-    name: Age
-    type: date
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
+      additionalPrinterColumns:
+      - jsonPath: .spec.severity
+        description: The importance of the log entry
+        name: Severity
+        type: string
+      - jsonPath: .spec.timestamp
+        description: The time value for the log entry
+        name: Timestamp
+        type: string
+      - jsonPath: .spec.monitored_resource_type
+        description: Optional expression to compute the type of the monitored resource this log entry is being recorded on
+        name: Res Type
+        type: string
+      - jsonPath: .metadata.creationTimestamp
+        description: |-
+          CreationTimestamp is a timestamp representing the server time when this object was created. It is not guaranteed to be set in happens-before order across separate operations. Clients may not set this value. It is represented in RFC3339 form and is in UTC.
+    
+          Populated by the system. Read-only. Null for lists. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
+        name: Age
+        type: date
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: edges.config.istio.io
   labels:
@@ -1043,10 +1311,17 @@ spec:
     - istio-io
     - policy-istio-io
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: metrics.config.istio.io
   labels:
@@ -1068,10 +1343,17 @@ spec:
     - istio-io
     - policy-istio-io
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: quotas.config.istio.io
   labels:
@@ -1093,10 +1375,17 @@ spec:
     - istio-io
     - policy-istio-io
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: reportnothings.config.istio.io
   labels:
@@ -1118,10 +1407,17 @@ spec:
     - istio-io
     - policy-istio-io
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: tracespans.config.istio.io
   labels:
@@ -1143,10 +1439,17 @@ spec:
     - istio-io
     - policy-istio-io
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: rbacconfigs.rbac.istio.io
   labels:
@@ -1168,10 +1471,17 @@ spec:
     - istio-io
     - rbac-istio-io
   scope: Namespaced
-  version: v1alpha1
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: serviceroles.rbac.istio.io
   labels:
@@ -1193,10 +1503,17 @@ spec:
     - istio-io
     - rbac-istio-io
   scope: Namespaced
-  version: v1alpha1
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: servicerolebindings.rbac.istio.io
   labels:
@@ -1218,22 +1535,29 @@ spec:
     - istio-io
     - rbac-istio-io
   scope: Namespaced
-  version: v1alpha1
-  additionalPrinterColumns:
-  - JSONPath: .spec.roleRef.name
-    description: The name of the ServiceRole object being referenced
-    name: Reference
-    type: string
-  - JSONPath: .metadata.creationTimestamp
-    description: |-
-      CreationTimestamp is a timestamp representing the server time when this object was created. It is not guaranteed to be set in happens-before order across separate operations. Clients may not set this value. It is represented in RFC3339 form and is in UTC.
-
-      Populated by the system. Read-only. Null for lists. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
-    name: Age
-    type: date
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
+      additionalPrinterColumns:
+      - jsonPath: .spec.roleRef.name
+        description: The name of the ServiceRole object being referenced
+        name: Reference
+        type: string
+      - jsonPath: .metadata.creationTimestamp
+        description: |-
+          CreationTimestamp is a timestamp representing the server time when this object was created. It is not guaranteed to be set in happens-before order across separate operations. Clients may not set this value. It is represented in RFC3339 form and is in UTC.
+    
+          Populated by the system. Read-only. Null for lists. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
+        name: Age
+        type: date
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: adapters.config.istio.io
   labels:
@@ -1255,10 +1579,17 @@ spec:
     - istio-io
     - policy-istio-io
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: instances.config.istio.io
   labels:
@@ -1280,10 +1611,17 @@ spec:
     - istio-io
     - policy-istio-io
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: templates.config.istio.io
   labels:
@@ -1305,10 +1643,17 @@ spec:
     - istio-io
     - policy-istio-io
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: handlers.config.istio.io
   labels:
@@ -1330,10 +1675,17 @@ spec:
     - istio-io
     - policy-istio-io
   scope: Namespaced
-  version: v1alpha2
+  versions:
+    - name: v1alpha2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
 
 ---
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   name: redisclusters.networking.istio.io
@@ -1347,41 +1699,13 @@ spec:
     plural: redisclusters
     singular: rediscluster
   scope: Namespaced
-  subresources:
-    status: {}
-  validation:
-    openAPIV3Schema:
-      description: RedisCluster is the Schema for the redisclusters API
-      properties:
-        apiVersion:
-          description: 'APIVersion defines the versioned schema of this representation
-            of an object. Servers should convert recognized schemas to the latest
-            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
-          type: string
-        kind:
-          description: 'Kind is a string value representing the REST resource this
-            object represents. Servers may infer this from the endpoint the client
-            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-          type: string
-        metadata:
-          type: object
-        spec:
-          description: RedisClusterSpec defines the desired state of RedisCluster
-          properties:
-            proxy:
-              properties:
-                auth:
-                  type: string
-              type: object
-            service:
-              type: string
-          type: object
-        status:
-          description: RedisClusterStatus defines the observed state of RedisCluster
-          type: object
-      type: object
-  version: v1alpha3
   versions:
-  - name: v1alpha3
-    served: true
-    storage: true
+    - name: v1alpha3
+      served: true
+      storage: true
+      subresources:
+        status: {}
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
