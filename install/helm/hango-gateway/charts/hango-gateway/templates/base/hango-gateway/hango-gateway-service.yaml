@@ -94,6 +94,10 @@ spec:
       targetPort: aux-port
       protocol: TCP
       name: aux-port
+    - name: mcp-over-xds
+      port: 16010
+      protocol: TCP
+      targetPort: 16010
   selector:
     app: slime-hango
 

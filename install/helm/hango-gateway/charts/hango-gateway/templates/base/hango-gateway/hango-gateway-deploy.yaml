@@ -247,6 +247,8 @@ spec:
               value: "false"
             - name: PILOT_ENABLE_CDS_CACHE
               value: "false"
+            - name: CONFIG_REVISION
+              value: mesh-reg
           image:  "{{ .Values.images.istiod_image }}"
           name: discovery
           ports:
@@ -346,6 +348,20 @@ spec:
               value: "true"
             - name: GODEBUG
               value: gctrace=1
+            - name: ENABLE_INC_PUSH
+              value: "true"
+            - name: LOCALITY_LABELS
+              value: system.msha/region,system.msha/zone,system.msha/cluster
+            - name: CLUSTER_ID
+              value: cluster1
+            - name: XDS_SEND_TIMEOUT
+              value: 40s
+            - name: SENT_NONCE_RECORD_NUM
+              value: "10"
+            - name: MESH_REG_ISTIO_REVISION
+              value: mesh-reg
+            - name: NSF_COLOR_ENDPOINT_LABEL
+              value: nsf.skiff.netease.com/mark
           ports:
             - name: http
               containerPort: 80
@@ -355,6 +371,9 @@ spec:
               protocol: TCP
             - name: log-source-port
               containerPort: 8082
+              protocol: TCP
+            - containerPort: 16010
+              name: mcp-over-xds
               protocol: TCP
           readinessProbe:
             httpGet:

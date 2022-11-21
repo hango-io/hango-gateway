@@ -2,11 +2,11 @@ data_dir: /data
 cluster_dns_domain: cluster.local
 
 images:
-  hango_apiplane_image: docker.io/hangoio/api-plane:latest
-  hango_portal_image: docker.io/hangoio/hango-portal:latest
-  hango_ui_image: docker.io/hangoio/hango-ui:v1.0.1-f7ddf75e
+  hango_apiplane_image: docker.io/hangoio/api-plane:1.1.0
+  hango_portal_image: docker.io/hangoio/hango-portal:v1.0.3-40b0cdb96
+  hango_ui_image: docker.io/hangoio/hango-ui:v1.0.3-1e003c49
   istiod_image: docker.io/hangoio/istiod:hango-1.0.0-rc1
-  slime_image: docker.io/slimeio/slime-bundle-hango:v0.5.0_linux_amd64
+  slime_image: docker.io/slimeio/slime-bundle-hango:hango-ee2bff9_linux_amd64
   hango_proxy_image: hangoio/envoy-proxy:v1.0.3-9c18597-amd64
 
 
@@ -28,3 +28,19 @@ slime:
         logLevel: info
       misc:
         seLabelSelectorKeys: projectName
+
+registry:
+  nacos:
+    ## nacos注册中心功能开关（true 或 false）
+    enable: false
+    ## 注册中心实例地址；格式：整体以英文单引号包裹，单个地址以英文双引号包裹，多个地址用英文逗号分隔
+    address: '"http://127.0.0.1:8848"'
+    ## nacos客户端服务所在分组
+    service_group: hango_demo
+  eureka:
+    ## eureka注册中心功能开关（true 或 false）
+    enable: false
+    ## 刷新eureka服务缓存的时间周期，默认15s，格式为: [正整数]s
+    refresh_period: 15s
+    ## 注册中心实例地址；格式：整体以英文单引号包裹，单个地址以英文双引号包裹，多个地址用英文逗号分隔
+    address: '"http://127.0.0.1:8761/eureka"'
