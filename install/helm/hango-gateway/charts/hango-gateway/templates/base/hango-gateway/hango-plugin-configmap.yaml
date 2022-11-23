@@ -248,6 +248,169 @@ data:
         }
       ]
     }
+  waf.json: |-
+    {
+      "inject": {
+        "kind": "waf"
+      },
+      "layouts": [
+        {
+          "key": "wafRule",
+          "alias": "修改规则",
+          "type": "layouts",
+          "layouts": [
+            {
+              "key": "dosSwitch",
+              "help": "防止拒绝服务攻击，针对 ip 级别的请求数统计实现防御",
+              "alias": "DOS",
+              "type": "switch",
+              "default": false
+            },
+            {
+              "key": "dosConfig",
+              "alias": "DOS配置",
+              "type": "layouts",
+              "visible": {
+                "this.dosSwitch": true
+              },
+              "layouts": [
+                {
+                  "key": "dos_burst_time_slice",
+                  "type": "input",
+                  "alias": "统计的时间窗口（秒）",
+                  "rules": [
+                    "Required",
+                    "Number",
+                    "MinNumber(0)",
+                    "MaxNumber(3600)"
+                  ]
+                },
+                {
+                  "key": "dos_counter_threshold",
+                  "type": "input",
+                  "alias": "阈值",
+                  "rules": [
+                    "Required",
+                    "Number",
+                    "MinNumber(0)",
+                    "MaxNumber(99999999)"
+                  ]
+                },
+                {
+                  "key": "dos_block_timeout",
+                  "type": "input",
+                  "alias": "请求拒绝的时间（秒）",
+                  "rules": [
+                    "Required",
+                    "Number",
+                    "MinNumber(0)",
+                    "MaxNumber(86400)"
+                  ]
+                }
+              ]
+            },
+            {
+              "key": "scannerSwitch",
+              "help": "防止扫描攻击，检查某些开源或商业的扫描攻击的默认 User-Agent 和 Headers",
+              "alias": "Scanner",
+              "type": "switch",
+              "default": false
+            },
+            {
+              "key": "lfiSwitch",
+              "help": "防止利用本地文件包含漏洞进行攻击，检查headers、cookie或者 uri 中是否包含目录遍历、系统文件等",
+              "alias": "LFI",
+              "type": "switch",
+              "default": false
+            },
+            {
+              "key": "rfiSwitch",
+              "help": "防止利用远程文件包含漏洞进行攻击，检查 url 参数中是否包含 ip 地址、body 中是否包含 include关键字等",
+              "alias": "RFI",
+              "type": "switch",
+              "default": false
+            },
+            {
+              "key": "rceSwitch",
+              "help": "防止利用远程命令执行漏洞进行攻击，检查 cookie、url 参数等是否包含Unix Command、Windows Command、Windows PowerShell Command 等",
+              "alias": "RCE",
+              "type": "switch",
+              "default": false
+            },
+            {
+              "key": "phpInjectionSwitch",
+              "help": "防止 PHP 代码注入 ，检查 headers、cookie、rl 参数等是否包含可能的 php 文件、关键字之类",
+              "alias": "PHP Injection",
+              "type": "switch",
+              "default": false
+            },
+            {
+              "key": "xssSwitch",
+              "help": "防止跨站脚本攻击，检查 headers、cookie、rl 参数等是否包含可能的网页脚本",
+              "alias": "XSS",
+              "type": "switch",
+              "default": false
+            },
+            {
+              "key": "sqliSwitch",
+              "help": "防止 SQL 注入，检查 headers、cookie、rl 参数等是否包含可能的 sql 语句等",
+              "alias": "SQLi",
+              "type": "switch",
+              "default": false
+            },
+            {
+              "key": "sessionFixationSwitch",
+              "help": "阻止利用Session会话ID不变的漏洞进行攻击",
+              "alias": "Session Fixation",
+              "type": "switch",
+              "default": false
+            },
+            {
+              "key": "javaInjectionSwitch",
+              "help": "防止 Java 代码注入，检查 headers、cookie、rl 参数等是否包含可能的 java 文件、关键字之类",
+              "alias": "Java Injection",
+              "type": "switch",
+              "default": false
+            },
+            {
+              "key": "cgiDataLeakagesSwitch",
+              "help": "防止【CGI】数据泄露，检查 response body 中是否包含相应语言的关键字或者错误输出等",
+              "alias": "CGI Data Leakages",
+              "type": "switch",
+              "default": false
+            },
+            {
+              "key": "sqlDataLeakagesSwitch",
+              "help": "防止【SQL】数据泄露，检查 response body 中是否包含相应语言的关键字或者错误输出等",
+              "alias": "SQL Data Leakages",
+              "type": "switch",
+              "default": false
+            },
+            {
+              "key": "javaDataLeakagesSwitch",
+              "help": "防止【JAVA】数据泄露，检查 response body 中是否包含相应语言的关键字或者错误输出等",
+              "alias": "Java Data Leakages",
+              "type": "switch",
+              "default": false
+            },
+            {
+              "key": "phpDataLeakagesSwitch",
+              "help": "防止【PHP】数据泄露，检查 response body 中是否包含相应语言的关键字或者错误输出等",
+              "alias": "PHP Data Leakages",
+              "type": "switch",
+              "default": false
+            },
+            {
+              "key": "iisDataLeakagesSwitch",
+              "help": "防止【IIS】数据泄露，检查 response body 中是否包含相应语言的关键字或者错误输出等",
+              "alias": "IIS Data Leakages",
+              "type": "switch",
+              "default": false
+            }
+          ]
+        }
+      ]
+    }
   uri-restriction.json: |-
     {
       "formatter": {
@@ -1285,6 +1448,21 @@ data:
           "pluginScope": "global,routeRule",
           "pluginPriority": "3000",
           "instructionForUse": "URI黑白名单插件",
+          "categoryKey": "security",
+          "categoryName": "安全"
+        },
+        {
+          "name": "waf",
+          "displayName": "waf",
+          "schema": "plugin/route/waf.json",
+          "description": "",
+          "processor": "AggregateGatewayPluginProcessor",
+          "author": "system",
+          "createTime": "1572537600000",
+          "updateTime": "1572537600000",
+          "pluginScope": "routeRule,global",
+          "pluginPriority": "1000",
+          "instructionForUse": "waf插件",
           "categoryKey": "security",
           "categoryName": "安全"
         }
