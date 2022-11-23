@@ -18,7 +18,9 @@ data:
     reportBatchMaxTime: 1s
     # Set enableTracing to false to disable request tracing.
     enableTracing: true
-
+    configSources:
+      - address: xds://slime-hango.{{ .Values.namespace }}.svc:16010?types=serviceentry
+      - address: k8s://
 
     # Set accessLogFile to empty string to disable access log.
     accessLogFile: "/tmp/gateway-proxy-envoy-access.log"
@@ -266,11 +268,13 @@ metadata:
 apiVersion: v1
 data:
   cfg: |
-    {"bundle":{"modules":[{"kind":"limiter","name":"limiter"},{"kind":"plugin","name":"plugin"}]},"enable":true,"global":{"configSources":[{"address":"ss://"}],"log":{"logLevel":"info"}},"name":"bundle"}
+    {"bundle":{"modules":[{"name":"plugin","kind":"plugin"},{"name":"limiter","kind":"limiter"},{"name":"meshregistry","kind":"meshregistry"}]},"enable":true,"global":{"service":"","istioNamespace":"hango-system","slimeNamespace":"hango-system","istioRev":"","configRev":"mesh-reg","configSources":[{"address":"ss://"}],"log":{"klogLevel":5,"logLevel":"info"},"misc":{"pathRedirect":"/ready->/meshregistry/ready,/pc->/meshregistry/pc,/nc->/meshregistry/nc,/zk->/meshregistry/zk,/zks->/meshregistry/zks,/xdsCache->/meshregistry/xdsCache","xdsSourceEnableIncPush":"true"}},"name":"bundle"}
   cfg_limiter: |
     {"enable":true,"general":{"disableAdaptive":true,"disableGlobalRateLimit":true,"disableInsertGlobalRateLimit":true},"kind":"limiter","mode":"BundleItem","name":"limiter"}
   cfg_plugin: |
     {"enable":true,"kind":"plugin","mode":"BundleItem","name":"plugin"}
+  cfg_meshregistry: |
+    {"name":"meshregistry","kind":"meshregistry","enable":true,"mode":"BundleItem","general":{"LEGACY":{"MeshConfigFile":"","RevCrds":"","Mcp":{},"K8SSource":{"Enabled":false},"EurekaSource":{"Enabled":{{ .Values.registry.eureka.enable }},"Address":[{{ .Values.registry.eureka.address }}],"RefreshPeriod":"{{ .Values.registry.eureka.refresh_period }}","GatewayModel":true},"NacosSource":{"Enabled":{{ .Values.registry.nacos.enable }},"Address":[{{ .Values.registry.nacos.address }}],"GatewayModel":true,"Group":"{{ .Values.registry.nacos.service_group }}"}}}}
 kind: ConfigMap
 metadata:
   name: slime-hango
@@ -334,3 +338,9 @@ data:
     4,
     '已上线'
     );
+    {{ if .Values.registry.nacos.enable }}
+    INSERT INTO apigw_gportal_registry_center (`registry_type`, `registry_addr`, `registry_alias`) VALUES ('Nacos', '-', 'nacos');
+    {{- end }}
+    {{ if .Values.registry.eureka.enable }}
+    INSERT INTO apigw_gportal_registry_center (`registry_type`, `registry_addr`, `registry_alias`) VALUES ('Eureka', '-', 'eureka');
+    {{- end }}
