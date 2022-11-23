@@ -7,7 +7,7 @@ images:
   hango_ui_image: docker.io/hangoio/hango-ui:v1.0.3-1e003c49
   istiod_image: docker.io/hangoio/istiod:hango-1.0.0-rc1
   slime_image: docker.io/slimeio/slime-bundle-hango:hango-ee2bff9_linux_amd64
-  hango_proxy_image: hangoio/envoy-proxy:v1.0.3-9c18597-amd64
+  hango_proxy_image: hangoio/envoy-proxy:v1.1.0-46f6660-amd64
 
 
 namespace: hango-system
@@ -31,16 +31,16 @@ slime:
 
 registry:
   nacos:
-    ## nacosæ³¨å†Œä¸­å¿ƒåŠŸèƒ½å¼€å…³ï¼ˆtrue æˆ– falseï¼‰
+    ## nacos×¢²áÖĞĞÄ¹¦ÄÜ¿ª¹Ø£¨true »ò false£©
     enable: false
-    ## æ³¨å†Œä¸­å¿ƒå®ä¾‹åœ°å€ï¼›æ ¼å¼ï¼šæ•´ä½“ä»¥è‹±æ–‡å•å¼•å·åŒ…è£¹ï¼Œå•ä¸ªåœ°å€ä»¥è‹±æ–‡åŒå¼•å·åŒ…è£¹ï¼Œå¤šä¸ªåœ°å€ç”¨è‹±æ–‡é€—å·åˆ†éš”
+    ## ×¢²áÖĞĞÄÊµÀıµØÖ·£»¸ñÊ½£ºÕûÌåÒÔÓ¢ÎÄµ¥ÒıºÅ°ü¹ü£¬µ¥¸öµØÖ·ÒÔÓ¢ÎÄË«ÒıºÅ°ü¹ü£¬¶à¸öµØÖ·ÓÃÓ¢ÎÄ¶ººÅ·Ö¸ô
     address: '"http://127.0.0.1:8848"'
-    ## nacoså®¢æˆ·ç«¯æœåŠ¡æ‰€åœ¨åˆ†ç»„
+    ## nacos¿Í»§¶Ë·şÎñËùÔÚ·Ö×é
     service_group: hango_demo
   eureka:
-    ## eurekaæ³¨å†Œä¸­å¿ƒåŠŸèƒ½å¼€å…³ï¼ˆtrue æˆ– falseï¼‰
+    ## eureka×¢²áÖĞĞÄ¹¦ÄÜ¿ª¹Ø£¨true »ò false£©
     enable: false
-    ## åˆ·æ–°eurekaæœåŠ¡ç¼“å­˜çš„æ—¶é—´å‘¨æœŸï¼Œé»˜è®¤15sï¼Œæ ¼å¼ä¸º: [æ­£æ•´æ•°]s
+    ## Ë¢ĞÂeureka·şÎñ»º´æµÄÊ±¼äÖÜÆÚ£¬Ä¬ÈÏ15s£¬¸ñÊ½Îª: [ÕıÕûÊı]s
     refresh_period: 15s
-    ## æ³¨å†Œä¸­å¿ƒå®ä¾‹åœ°å€ï¼›æ ¼å¼ï¼šæ•´ä½“ä»¥è‹±æ–‡å•å¼•å·åŒ…è£¹ï¼Œå•ä¸ªåœ°å€ä»¥è‹±æ–‡åŒå¼•å·åŒ…è£¹ï¼Œå¤šä¸ªåœ°å€ç”¨è‹±æ–‡é€—å·åˆ†éš”
+    ## ×¢²áÖĞĞÄÊµÀıµØÖ·£»¸ñÊ½£ºÕûÌåÒÔÓ¢ÎÄµ¥ÒıºÅ°ü¹ü£¬µ¥¸öµØÖ·ÒÔÓ¢ÎÄË«ÒıºÅ°ü¹ü£¬¶à¸öµØÖ·ÓÃÓ¢ÎÄ¶ººÅ·Ö¸ô
     address: '"http://127.0.0.1:8761/eureka"'

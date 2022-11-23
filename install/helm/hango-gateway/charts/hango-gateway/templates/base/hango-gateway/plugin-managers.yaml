@@ -35,6 +35,19 @@ spec:
     name: proxy.filters.http.detailed_stats
     port: 80
   - enable: true
+    listenerType: Gateway
+    name: proxy.filters.http.waf
+    port: 80
+  - enable: true
+    inline:
+      settings:
+        all_colors_key: qz_colors
+        header_key: x-nsf-mark
+        match_key: qz_color
+    listenerType: Gateway
+    name: proxy.filters.http.traffic_mark
+    port: 80
+  - enable: true
     inline:
       settings:
         ip_source_header: x-hango-real-ip
