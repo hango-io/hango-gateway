@@ -1071,9 +1071,7 @@ data:
                 }
               ],
               "rules": [
-                "Required",
-                "MaxNumber(3)",
-                "MinNumber(0)"
+                "Required"
               ]
             },
             {
