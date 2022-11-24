@@ -3,7 +3,7 @@ cluster_dns_domain: cluster.local
 
 images:
   hango_apiplane_image: docker.io/hangoio/api-plane:1.1.0
-  hango_portal_image: docker.io/hangoio/hango-portal:v1.0.3-40b0cdb96
+  hango_portal_image: docker.io/hangoio/hango-portal:1.1.0
   hango_ui_image: docker.io/hangoio/hango-ui:v1.0.3-1e003c49
   istiod_image: docker.io/hangoio/istiod:hango-1.0.0-rc1
   slime_image: docker.io/slimeio/slime-bundle-hango:hango-ee2bff9_linux_amd64
