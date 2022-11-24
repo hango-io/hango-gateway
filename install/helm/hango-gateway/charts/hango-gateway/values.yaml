@@ -31,16 +31,16 @@ slime:
 
 registry:
   nacos:
-    ## nacosע�����Ĺ��ܿ��أ�true �� false��
+    ## nacos注册中心功能开关（true 或 false）
     enable: false
-    ## ע������ʵ����ַ����ʽ��������Ӣ�ĵ����Ű�����������ַ��Ӣ��˫���Ű����������ַ��Ӣ�Ķ��ŷָ�
+    ## 注册中心实例地址；格式：整体以英文单引号包裹，单个地址以英文双引号包裹，多个地址用英文逗号分隔
     address: '"http://127.0.0.1:8848"'
-    ## nacos�ͻ��˷������ڷ���
+    ## nacos客户端服务所在分组
     service_group: hango_demo
   eureka:
-    ## eurekaע�����Ĺ��ܿ��أ�true �� false��
+    ## eureka注册中心功能开关（true 或 false）
     enable: false
-    ## ˢ��eureka���񻺴��ʱ�����ڣ�Ĭ��15s����ʽΪ: [������]s
+    ## 刷新eureka服务缓存的时间周期，默认15s，格式为: [正整数]s
     refresh_period: 15s
-    ## ע������ʵ����ַ����ʽ��������Ӣ�ĵ����Ű�����������ַ��Ӣ��˫���Ű����������ַ��Ӣ�Ķ��ŷָ�
+    ## 注册中心实例地址；格式：整体以英文单引号包裹，单个地址以英文双引号包裹，多个地址用英文逗号分隔
     address: '"http://127.0.0.1:8761/eureka"'
