@@ -26,7 +26,7 @@ spec:
         - name: NCE_PORT
           value: "10880"
         - name: NCE_JAVA_OPTS
-          value: "-DistioNamespace={{ .Values.namespace }} -DistioName=istiod -DstartInformer=false -DresourceNamespace={{ .Values.namespace }} "
+          value: "-DistioNamespace={{ .Values.namespace }} -DistioName=istiod -DstartInformer=false -DresourceNamespace={{ .Values.namespace }} -DmeshRegistryName=slime-hango"
         image: "{{.Values.images.hango_apiplane_image}}"
         name: tomcat
         volumeMounts:

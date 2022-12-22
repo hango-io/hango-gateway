@@ -2,12 +2,12 @@ data_dir: /data
 cluster_dns_domain: cluster.local
 
 images:
-  hango_apiplane_image: docker.io/hangoio/api-plane:1.1.0
-  hango_portal_image: docker.io/hangoio/hango-portal:1.1.0
+  hango_apiplane_image: docker.io/hangoio/api-plane:1.2.0
+  hango_portal_image: docker.io/hangoio/hango-portal:1.2.0
   hango_ui_image: docker.io/hangoio/hango-ui:v1.0.3-1e003c49
-  istiod_image: docker.io/hangoio/istiod:hango-1.0.0-rc1
+  istiod_image: docker.io/hangoio/pilot:hango-1.2.0-rc1
   slime_image: docker.io/slimeio/slime-bundle-hango:hango-ee2bff9_linux_amd64
-  hango_proxy_image: hangoio/envoy-proxy:v1.1.0-46f6660-amd64
+  hango_proxy_image: hangoio/envoy-proxy:v1.2.1-215c540-amd64
 
 
 namespace: hango-system
@@ -44,3 +44,10 @@ registry:
     refresh_period: 15s
     ## 注册中心实例地址；格式：整体以英文单引号包裹，单个地址以英文双引号包裹，多个地址用英文逗号分隔
     address: '"http://127.0.0.1:8761/eureka"'
+  zk:
+    ## zookeeper注册中心功能开关（true 或 false）
+    enable: false
+    ## 刷新zookeeper服务缓存的时间周期，默认15s，格式为: [正整数]s
+    refresh_period: 15s
+    ## 注册中心实例地址；格式：整体以英文单引号包裹，单个地址以英文双引号包裹，多个地址用英文逗号分隔
+    address: '"zookeeper.apigw-demo.svc.cluster.local:2181"'
