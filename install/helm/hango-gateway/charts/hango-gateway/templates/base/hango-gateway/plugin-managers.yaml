@@ -55,8 +55,11 @@ spec:
     name: proxy.filters.http.iprestriction
     port: 80
   - enable: true
+    inline:
+      settings:
+        stat_prefix: http_local_rate_limiter
     listenerType: Gateway
-    name: proxy.filters.http.locallimit
+    name: envoy.filters.http.local_ratelimit
     port: 80
   - enable: true
     listenerType: Gateway

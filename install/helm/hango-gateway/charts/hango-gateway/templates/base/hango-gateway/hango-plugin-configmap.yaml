@@ -161,25 +161,23 @@ data:
       },
       "layouts": [
         {
-          "key": "IsSafe",
-          "alias": "是否线程独立",
-          "type": "switch",
-          "help": "默认使用锁机制保证安全；如果打开该字段，代表线程独立。限流规则上限为rate*proxy worker"
-        },
-        {
           "key": "limit_by_list",
-          "alias": "限流标识列表",
+          "alias": "限制规则列表",
           "type": "array",
           "layouts": [
             {
               "key": "headers",
-              "alias": "限流headers",
+              "alias": "请求头匹配",
               "type": "array",
               "layouts": [
                 {
                   "key": "headerKey",
-                  "alias": "限流header",
-                  "type": "input"
+                  "alias": "请求头名称",
+                  "type": "input",
+                  "rules": [
+                    "Required",
+                    "MaxLength(200)"
+                  ]
                 },
                 {
                   "key": "match_type",
@@ -195,16 +193,18 @@ data:
                       "text": "正则表达式",
                       "value": "safe_regex_match"
                     }
+                  ],
+                  "rules": [
+                    "Required"
                   ]
                 },
                 {
                   "key": "value",
                   "type": "input",
                   "alias": "取值",
-                  "invisible": {
-                    "present_match": ["this", "match_type"],
-                    "present_match_invert": ["this", "match_type"]
-                  }
+                  "rules": [
+                    "Required"
+                  ]
                 }
               ]
             },
@@ -214,7 +214,7 @@ data:
               "type": "number",
               "rules": [
                 "Number",
-                "MinNumber(0)"
+                "MinNumber(1)"
               ]
             },
             {
@@ -223,7 +223,7 @@ data:
               "type": "number",
               "rules": [
                 "Number",
-                "MinNumber(0)"
+                "MinNumber(1)"
               ]
             },
             {
@@ -232,7 +232,7 @@ data:
               "type": "number",
               "rules": [
                 "Number",
-                "MinNumber(0)"
+                "MinNumber(1)"
               ]
             },
             {
@@ -241,7 +241,7 @@ data:
               "type": "number",
               "rules": [
                 "Number",
-                "MinNumber(0)"
+                "MinNumber(1)"
               ]
             }
           ]
@@ -654,6 +654,9 @@ data:
                       "alias": "请求头名称",
                       "type": "input"
                     },
+                    "rules": [
+                      "MaxLength(200)"
+                    ],
                     {
                       "key": "match_type",
                       "alias": "匹配方式",
@@ -749,6 +752,9 @@ data:
                       "alias": "响应头名称",
                       "type": "input"
                     },
+                    "rules": [
+                      "MaxLength(200)"
+                    ],
                     {
                       "key": "match_type",
                       "alias": "匹配方式",
@@ -807,7 +813,7 @@ data:
                     "Required",
                     "Number",
                     "MinNumber(0)",
-                    "MaxNumber(99999999)"
+                    "MaxNumber(86400000)"
                   ]
                 },
                 {
@@ -822,7 +828,10 @@ data:
                       "help": "支持输入具体的响应码及X..，如2..代表2XX响应码",
                       "type": "input",
                       "rules": [
-                        "Required"
+                        "Required",
+                        "Number",
+                        "MinNumber(200)",
+                        "MaxNumber(599)"
                       ]
                     },
                     {
@@ -833,7 +842,7 @@ data:
                         "Required",
                         "Number",
                         "MinNumber(0)",
-                        "MaxNumber(99999999)"
+                        "MaxNumber(86400000)"
                       ]
                     }
                   ]
@@ -866,13 +875,19 @@ data:
               "key": "queryString",
               "alias": "自定义查询参数",
               "help": "自定义查询参数参与key计算",
-              "type": "multi_input"
+              "type": "multi_input",
+              "rules": [
+                "MaxLength(200)"
+              ]
             },
             {
               "key": "headers",
               "alias": "自定义请求头",
               "type": "multi_input",
-              "help": "自定义请求头参与key计算"
+              "help": "自定义请求头参与key计算",
+              "rules": [
+                "MaxLength(200)"
+              ]
             }
           ]
         }
@@ -1083,7 +1098,8 @@ data:
                 "this.operation": "delete"
               },
               "rules": [
-                "Required"
+                "Required",
+                "MaxLength(200)"
               ]
             }
           ]
@@ -1158,12 +1174,12 @@ data:
               "alias": "最小请求次数",
               "help": "与错误百分比阈值搭配生效，仅在统计窗口内，最小请求次数与错误百分比阈值同时满足时触发熔断",
               "type": "input",
-              "placeholder": "范围 [1, 4294967295] 之间",
+              "placeholder": "范围 [1, 1000000] 之间",
               "rules": [
                 "Required",
                 "Number",
                 "MinNumber(1)",
-                "MaxNumber(4294967295)"
+                "MaxNumber(1000000)"
               ]
             }
           ]
@@ -1194,13 +1210,13 @@ data:
             {
               "key": "consecutiveSlowRequests",
               "alias": "连续慢响应次数",
-              "help": "与响应时间阈值，范围 [1, 4294967295] 之间，与慢响应时间阈值搭配生效，当连续有",
+              "help": "与响应时间阈值，范围 [1, 10000] 之间，与慢响应时间阈值搭配生效，当连续有",
               "type": "input",
               "rules": [
                 "Required",
                 "Number",
                 "MinNumber(1)",
-                "MaxNumber(4294967295)"
+                "MaxNumber(10000)"
               ]
             }
           ]
@@ -1210,12 +1226,12 @@ data:
           "alias": "统计窗口",
           "help": "统计窗口，单位s，默认10s，最大值为120s",
           "type": "input",
-          "placeholder": "单位s，范围(0.0,120.0)",
+          "placeholder": "单位s，范围[1, 120]",
           "rules": [
             "Required",
-            "FloatNumber(5)",
-            "MaxFloatNumber(119.999)",
-            "MinFloatNumber(0.00001)"
+            "Number",
+            "MinNumber(1)",
+            "MaxNumber(120)"
           ]
         },
         {
@@ -1223,12 +1239,12 @@ data:
           "alias": "惩罚时间",
           "help": "当触发熔断时的惩罚时间，单位s，在该时间内不再请求后端服务而之间返回熔断后的定制响应",
           "type": "input",
-          "placeholder": "单位s，范围 (0.0, 10000]",
+          "placeholder": "单位s，范围 [1, 7200]",
           "rules": [
             "Required",
-            "FloatNumber(5)",
-            "MaxFloatNumber(10000.0)",
-            "MinFloatNumber(0.00001)"
+            "Number",
+            "MinNumber(1)",
+            "MaxNumber(7200)"
           ]
         },
         {
@@ -1259,7 +1275,8 @@ data:
                   "type": "input",
                   "alias": "响应头名称",
                   "rules": [
-                    "Required"
+                    "Required",
+                    "MaxLength(200)"
                   ]
                 },
                 {
@@ -1267,7 +1284,8 @@ data:
                   "type": "input",
                   "alias": "响应头值",
                   "rules": [
-                    "Required"
+                    "Required",
+                    "MaxLength(200)"
                   ]
                 }
               ]
