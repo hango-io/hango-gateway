@@ -2,9 +2,9 @@ data_dir: /data
 cluster_dns_domain: cluster.local
 
 images:
-  hango_apiplane_image: docker.io/hangoio/api-plane:1.2.0
-  hango_portal_image: docker.io/hangoio/hango-portal:1.2.0
-  hango_ui_image: docker.io/hangoio/hango-ui:v1.0.3-1e003c49
+  hango_apiplane_image: hangoio/api-plane:1.3.0
+  hango_portal_image: hangoio/hango-portal:1.3.0
+  hango_ui_image: hangoio/hango-ui:v1.3.0-f1bdd216
   istiod_image: docker.io/hangoio/pilot:hango-1.2.0-rc1
   slime_image: docker.io/slimeio/slime-bundle-hango:hango-ee2bff9_linux_amd64
   hango_proxy_image: hangoio/envoy-proxy:v1.2.1-215c540-amd64
@@ -18,7 +18,7 @@ istio_rev: gw-1.12
 gateway_xds_service_address: istiod.hango-system.svc.cluster.local
 gateway_xds_service_security_port: 15012
 gateway_xds_service_port: 15010
-gateway_cluster: demo-istio
+gateway_cluster: hango-demo-gateway
 
 slime:
   cfg:
