@@ -14,9 +14,9 @@ Through the Hango Rider module, users can customize multi-language plugins for c
 
 ## Documentation
 
-[Blog](https://hango-io.github.io/): introducing Hango
-[QuickStart](https://github.com/hango-io/hango-gateway/blob/master/example/expose_api_with_ui.zh_CN.md)
-[RoadMap](changelog/RoadMap%202022.md)
+[Website](https://hango-io.github.io): introducing futures, roadmaps, configurations, practices and so on
+
+[Blog](https://hango-io.github.io/blog): introducing Hango
 
 ## Summary
 

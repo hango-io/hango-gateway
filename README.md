@@ -14,11 +14,9 @@ Hango 提供请求代理、动态路由、负载均衡、限流、熔断、健�
 
 ## 文档
 
-[博客](https://hango-io.github.io/): 介绍Hango相关动态
+[指引文档](https://hango-io.github.io): 介绍功能、版本、配置、实践等内容的各类文档
 
-[快速入门](https://github.com/hango-io/hango-gateway/blob/master/example/expose_api_with_ui.zh_CN.md)
-
-[RoadMap](changelog/RoadMap%202022.md)
+[博客](https://hango-io.github.io/blog): 介绍Hango相关动态
 
 ## <span id="why"> 为什么选择Hango
 
