@@ -4,11 +4,10 @@ cluster_dns_domain: cluster.local
 images:
   hango_apiplane_image: hangoio/api-plane:1.3.2
   hango_portal_image: hangoio/hango-portal:1.3.2
-  hango_ui_image: hangoio/hango-ui:v1.3.0
+  hango_ui_image: hangoio/hango-ui:v1.3.0-198a7b2f
   istiod_image: docker.io/hangoio/pilot:hango-1.3.0
   slime_image: docker.io/slimeio/slime-bundle-hango:hango-v1.3.0
-  hango_proxy_image: hangoio/envoy-proxy:v1.2.1-215c540-amd64
-
+  hango_proxy_image: hangoio/envoy-proxy:v1.3.0-035fa7e
 
 namespace: hango-system
 
