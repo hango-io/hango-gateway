@@ -28,6 +28,11 @@ spec:
             - name: NCE_JAVA_OPTS
               value: "-DistioNamespace={{ .Values.namespace }} -DistioName=istiod -DstartInformer=false -DresourceNamespace={{ .Values.namespace }} -DmeshRegistryName=slime-hango"
           image: "{{.Values.images.hango_apiplane_image}}"
+          resources:
+            requests:
+              memory: 800Mi
+            limits:
+              memory: 1024Mi
           name: tomcat
           volumeMounts:
             - mountPath: /usr/local/tomcat/logs
@@ -98,6 +103,11 @@ spec:
             - name: NCE_PORT
               value: "11113"
           image: "{{ .Values.images.hango_portal_image }}"
+          resources:
+            requests:
+              memory: 800Mi
+            limits:
+              memory: 1024Mi
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - mountPath: /usr/local/tomcat/logs
@@ -166,7 +176,11 @@ spec:
             periodSeconds: 10
             successThreshold: 1
             timeoutSeconds: 1
-          resources: {}
+          resources:
+            requests:
+              memory: 1.5Gi
+            limits:
+              memory: 1.5Gi
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
       dnsPolicy: ClusterFirstWithHostNet
@@ -268,6 +282,11 @@ spec:
             - name: CONFIG_REVISION
               value: mesh-reg
           image:  "{{ .Values.images.istiod_image }}"
+          resources:
+            requests:
+              memory: 256Mi
+            limits:
+              memory: 1024Mi
           name: discovery
           ports:
             - containerPort: 8080
@@ -413,11 +432,9 @@ spec:
             timeoutSeconds: 1
           resources:
             limits:
-              cpu: "1"
-              memory: 1Gi
+              memory: 256Mi
             requests:
-              cpu: 200m
-              memory: 200Mi
+              memory: 1024Mi
           securityContext: {}
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
@@ -521,6 +538,11 @@ spec:
                   apiVersion: v1
                   fieldPath: spec.serviceAccountName
           image: "{{ .Values.images.hango_proxy_image }}"
+          resources:
+            requests:
+              memory: 256Mi
+            limits:
+              memory: 1024Mi
           imagePullPolicy: IfNotPresent
           name: hango-proxy
           ports:
