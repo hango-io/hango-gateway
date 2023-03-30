@@ -431,9 +431,9 @@ spec:
             successThreshold: 1
             timeoutSeconds: 1
           resources:
-            limits:
-              memory: 256Mi
             requests:
+              memory: 256Mi
+            limits:
               memory: 1024Mi
           securityContext: {}
           terminationMessagePath: /dev/termination-log
