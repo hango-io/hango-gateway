@@ -34,6 +34,7 @@ spec:
             limits:
               memory: 1024Mi
           name: tomcat
+          imagePullPolicy: IfNotPresent
           volumeMounts:
             - mountPath: /usr/local/tomcat/logs
               name: log
@@ -132,6 +133,7 @@ spec:
           name: hango-portal-config
       restartPolicy: Always
       dnsPolicy: ClusterFirstWithHostNet
+
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -184,6 +186,7 @@ spec:
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
       dnsPolicy: ClusterFirstWithHostNet
+
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
@@ -258,7 +261,7 @@ spec:
             - name: PILOT_ENABLE_PROTOCOL_SNIFFING_FOR_INBOUND
               value: "false"
             - name: ISTIOD_ADDR
-              value: istiod.{{ .Values.namespace }}.svc.cluster.local:15010
+              value: istiod.{{ .Values.namespace }}.svc.cluster.local:15012
             - name: STRICT_ISTIO_REV
               value: "true"
             - name: PILOT_FILTER_GATEWAY_CLUSTER_CONFIG
@@ -291,7 +294,7 @@ spec:
           ports:
             - containerPort: 8080
               protocol: TCP
-            - containerPort: 15010
+            - containerPort: 15012
               protocol: TCP
             - containerPort: 15017
               protocol: TCP
@@ -304,6 +307,7 @@ spec:
             runAsGroup: 1337
             runAsNonRoot: true
             runAsUser: 1337
+          imagePullPolicy: IfNotPresent
           volumeMounts:
             - mountPath: /var/run/secrets/istio-dns
               name: local-certs
@@ -337,6 +341,7 @@ spec:
           name: config-volume
       restartPolicy: Always
       dnsPolicy: ClusterFirstWithHostNet
+
 
 ---
 apiVersion: apps/v1
@@ -479,6 +484,9 @@ spec:
         prometheus.io/path: /metrics
         prometheus.io/port: "19000"
         prometheus.io/scrape: "true"
+        proxy.istio.io/config: |-
+          discoveryAddress: {{$.Values.gateway_xds_service_address}}:{{$.Values.gateway_xds_service_security_port}}
+          controlPlaneAuthPolicy: MUTUAL_TLS
       labels:
         app: hango-proxy
         gw_cluster: {{ .Values.gateway_cluster }}
@@ -503,8 +511,9 @@ spec:
               value: first-party-jwt
             - name: PILOT_CERT_PROVIDER
               value: istiod
+            - name: ISTIO_META_CLUSTER_ID
+              value: Kubernetes
             - name: ISTIO_META_UNPRIVILEGED_POD
-              value: ""
             - name: CA_ADDR
               value: {{$.Values.gateway_xds_service_address}}:{{$.Values.gateway_xds_service_security_port}}
             - name: NODE_NAME
