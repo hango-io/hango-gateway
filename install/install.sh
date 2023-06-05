@@ -70,15 +70,36 @@ function helm_install_for_hango_component() {
 }
 
 function verify_hango_install() {
-    while true
-    do
-       sleep 10s
-       pod_number=`kubectl -n $HANGO_NAMESPACE get pods | grep Running | wc -l`
-       if [[ $pod_number -ge 7 ]]; then
-          echo "hango pod running"
-          break
-       fi
-    done    
+  sleep 10
+  while true; do
+    # 获取命名空间中所有的 Deployment 名称
+    DEPLOYMENTS="$(kubectl get deploy -n ${HANGO_NAMESPACE} -o jsonpath='{.items[*].metadata.name}')"
+
+    # 遍历所有的 Deployment
+    for DEPLOYMENT_NAME in ${DEPLOYMENTS}; do
+      # 获取 Deployment 的当前状态
+      DEPLOYMENT_STATUS="$(kubectl get deployment ${DEPLOYMENT_NAME} -n ${HANGO_NAMESPACE} -o jsonpath='{.status}')"
+
+      # 解析 Deployment 可用 Pod 的数量和总数
+      AVAILABLE="$(echo ${DEPLOYMENT_STATUS} | jq -r '.availableReplicas')"
+      DESIRED="$(echo ${DEPLOYMENT_STATUS} | jq -r '.replicas')"
+
+      # 判断 Deployment 是否就绪
+      if [[ ${AVAILABLE} -eq ${DESIRED} ]]; then
+        echo "Deployment ${DEPLOYMENT_NAME} is ready."
+      else
+        echo "Deployment ${DEPLOYMENT_NAME} is not ready yet. Waiting..."
+        # 如果有任何一个 Deployment 不就绪，则退出循环
+        continue 2
+      fi
+    done
+
+    # 所有的 Deployment 都就绪，退出循环
+    echo "All deployments are ready."
+    break
+
+    sleep 5
+  done
 }
 
 function init_for_namespaces() {
