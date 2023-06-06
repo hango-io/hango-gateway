@@ -13,7 +13,7 @@ spec:
     targetPort: 10880
     name: http
   selector:
-    app: hango-api-plane
+    api-plane-container: hango-api-plane
 
 ---
 apiVersion: v1
@@ -29,7 +29,7 @@ spec:
   - port: 80
     targetPort: 11113
   selector:
-    app: hango-portal
+    portal-container: hango-portal
 
 ---
 apiVersion: v1
