@@ -45,7 +45,7 @@ spec:
             - name: NCE_PORT
               value: "10880"
             - name: NCE_JAVA_OPTS
-              value: "-DistioNamespace={{ .Values.namespace }} -DgatewayNamespace={{ .Values.namespace }} -DistioName=istiod -DstartInformer=false -DresourceNamespace={{ .Values.namespace }} -DmeshRegistryName=slime-hango"
+              value: "-DistioNamespace={{ .Values.namespace }} -DistioRev={{ .Values.istio_rev }} -DgatewayNamespace={{ .Values.namespace }} -DistioName=istiod -DstartInformer=false -DresourceNamespace={{ .Values.namespace }} -DmeshRegistryName=slime-hango"
           image: "{{.Values.images.hango_apiplane_image}}"
           resources:
             requests:
@@ -207,6 +207,8 @@ spec:
           env:
             - name: KUBE_NAMESPACE_WHITELIST
               value: {{ .Values.namespace }}
+            - name: K8S_INGRESS_LABEL
+              value: gw_cluster:{{ .Values.gateway_cluster}}
             - name: REVISION
               value: {{ .Values.istio_rev }}
             - name: JWT_POLICY
