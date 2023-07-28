@@ -53,7 +53,9 @@ data:
     localityLbSetting:
       enabled: false
 
-    ingressControllerMode: 1
+    ingressControllerMode: 3
+    ingressClass: hango
+
 
     # DNS refresh rate for Envoy clusters of type STRICT_DNS
     dnsRefreshRate: 300s
