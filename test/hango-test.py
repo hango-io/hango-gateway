@@ -6,7 +6,7 @@ import const
 import commands
 import sys
 
-# 等待测试适配网关新模型版本 v1.4.0
+# 等待后续版本进行适配
 print("Please wait for the test future online...")
 sys.exit()
 
