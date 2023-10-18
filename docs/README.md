@@ -1,5 +1,7 @@
 # Hango 文档
 
+仅罗列部分插件文档，更多文档请参考[Hango website](https://hango-io.github.io/)
+
 ## 插件
 
 * [插件界面配置引导](plugin/plugin-configuring-guide.md)
